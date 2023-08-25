@@ -1,3 +1,5 @@
+CREATE DATABASE "dynamic-user-segmentation";
+
 CREATE TABLE users (
     id serial PRIMARY KEY,
     name text
