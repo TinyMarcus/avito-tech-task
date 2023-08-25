@@ -1,0 +1,30 @@
+version: "3"
+services:
+  postgres:
+    image: library/postgres:13
+    container_name: postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/postgres/:/docker-entrypoint-initdb.d/
+    ports:
+      - "5432:5432"
+
+  dynamic-user-segmentation-service:
+    container_name: dynamic-user-segmentation-service
+    build:
+      context: src/dynamic-user-segmentation-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    links: 
+      - postgres
+    restart: on-failure
+
+volumes:
+  db-data:
