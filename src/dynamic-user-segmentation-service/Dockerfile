@@ -4,14 +4,13 @@ FROM golang:1.19
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
-RUN go mod download
-
 COPY . .
 
-RUN go build -o ./app
+RUN go mod tidy
 
-EXPOSE 8080
+RUN go build -o app ./cmd/dynamic-user-segmentation-service
+
 ENV PORT=8080
+EXPOSE ${PORT}
 
-ENTRYPOINT [ "./app" ]
+ENTRYPOINT ["./app"]

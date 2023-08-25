@@ -19,7 +19,7 @@ func InitConfiguration() {
 		"dynamic-user-segmentation",
 		"postgres",
 		"postgres",
-		"localhost",
+		"postgres",
 		"5432",
 	}
 }
