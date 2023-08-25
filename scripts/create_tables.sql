@@ -1,17 +1,17 @@
-CREATE DATABASE "dynamic-user-segmentation";
+CREATE DATABASE IF NOT EXISTS "dynamic-user-segmentation";
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id serial PRIMARY KEY,
     name text
 );
 
-CREATE TABLE segments (
+CREATE TABLE IF NOT EXISTS segments (
     id serial PRIMARY KEY,
     slug text UNIQUE,
     description text
 );
 
-CREATE TABLE users_segments (
+CREATE TABLE IF NOT EXISTS users_segments (
     user_id serial,
     slug text,
     deadline_date timestamp with time zone,
@@ -19,7 +19,7 @@ CREATE TABLE users_segments (
     CONSTRAINT fk_segment FOREIGN KEY (slug) REFERENCES segments (slug)
 );
 
-CREATE TABLE history (
+CREATE TABLE IF NOT EXISTS history (
     user_id serial NOT NULL,
     slug text NOT NULL,
     action_date timestamp with time zone NOT NULL,
