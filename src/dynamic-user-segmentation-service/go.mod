@@ -23,6 +23,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
+	github.com/vektra/mockery v1.1.2 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
