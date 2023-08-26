@@ -2,15 +2,19 @@ package db
 
 import (
 	"database/sql"
-	"dynamic-user-segmentation-service/internal/utils"
 	"fmt"
 	_ "github.com/lib/pq"
+	"os"
 )
 
-func CreateConnection(cnf utils.DatabaseConfiguration) *sql.DB {
+func CreateConnection() *sql.DB {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		cnf.Host, cnf.User, cnf.Password, cnf.Name, cnf.Port)
-	db, err := sql.Open(cnf.Type, dsn)
+		os.Getenv("HOST"),
+		os.Getenv("USER"),
+		os.Getenv("PASSWORD"),
+		os.Getenv("NAME"),
+		os.Getenv("DBPORT"))
+	db, err := sql.Open(os.Getenv("TYPE"), dsn)
 	if err != nil {
 		panic(err)
 	}
