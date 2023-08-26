@@ -5,7 +5,6 @@ import (
 	"dynamic-user-segmentation-service/internal/db"
 	"dynamic-user-segmentation-service/internal/errors"
 	"dynamic-user-segmentation-service/internal/models"
-	"dynamic-user-segmentation-service/internal/utils"
 	goErrors "errors"
 )
 
@@ -31,7 +30,7 @@ const (
 )
 
 func (r *PostgresSegmentRepository) GetAllSegments() ([]*models.Segment, error) {
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	var segments []*models.Segment
@@ -58,7 +57,7 @@ func (r *PostgresSegmentRepository) GetAllSegments() ([]*models.Segment, error) 
 }
 
 func (r *PostgresSegmentRepository) GetSegmentBySlug(slug string) (*models.Segment, error) {
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	segment := new(models.Segment)
@@ -83,7 +82,7 @@ func (r *PostgresSegmentRepository) CheckIfSegmentAlreadyExists(slug string) boo
 }
 
 func (r *PostgresSegmentRepository) CreateSegment(slug, description string) error {
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	if exists := r.CheckIfSegmentAlreadyExists(slug); exists == false {
@@ -99,7 +98,7 @@ func (r *PostgresSegmentRepository) CreateSegment(slug, description string) erro
 }
 
 func (r *PostgresSegmentRepository) UpdateSegment(slug, description string) error {
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	updated := new(models.Segment)
@@ -119,7 +118,7 @@ func (r *PostgresSegmentRepository) UpdateSegment(slug, description string) erro
 }
 
 func (r *PostgresSegmentRepository) DeleteSegment(slug string) (*models.Segment, error) {
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	deleted := new(models.Segment)

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"dynamic-user-segmentation-service/internal/db"
 	"dynamic-user-segmentation-service/internal/errors"
-	"dynamic-user-segmentation-service/internal/utils"
 	"time"
 )
 
@@ -23,7 +22,7 @@ const (
 )
 
 func (r *PostgresHistoryRepository) SetAddingHistoryRecord(userId int, slug string) error {
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	_, err := r.db.Exec(saveRecord, userId, slug, time.Now(), "ADDING")
@@ -35,7 +34,7 @@ func (r *PostgresHistoryRepository) SetAddingHistoryRecord(userId int, slug stri
 }
 
 func (r *PostgresHistoryRepository) SetRemovingHistoryRecord(userId int, slug string) error {
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	_, err := r.db.Exec(saveRecord, userId, slug, time.Now(), "REMOVING")

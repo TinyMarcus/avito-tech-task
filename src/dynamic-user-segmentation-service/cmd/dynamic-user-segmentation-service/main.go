@@ -3,16 +3,19 @@ package main
 import (
 	"dynamic-user-segmentation-service/internal/handlers"
 	"dynamic-user-segmentation-service/internal/utils"
-	"log"
 	"net/http"
 	"os"
 )
 
+const appName = "dynamic-user-segmentation-service"
+
 func main() {
 	port := os.Getenv("PORT")
-	utils.InitConfiguration()
-	r := handlers.Router()
+	logger := utils.CreateLogger()
+	defer logger.Sync()
 
-	log.Println("server is listening on port: ", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	r := handlers.Router(logger)
+
+	logger.Info("Server is started on port ", port)
+	logger.Fatal(http.ListenAndServe(":"+port, r))
 }

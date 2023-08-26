@@ -6,7 +6,6 @@ import (
 	"dynamic-user-segmentation-service/internal/repositories"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -17,7 +16,6 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	users, err := userRepository.GetAllUsers()
 	w.Header().Add("Content-Type", "application/json")
 	if err != nil {
-		log.Printf("failed to get users: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		errorDto := &models.ErrorDto{
 			Error: "Возникла внутренняя ошибка при запросе всех пользователей",
@@ -39,7 +37,6 @@ func GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := userRepository.GetUserById(userId)
 	w.Header().Add("Content-Type", "application/json")
 	if err != nil {
-		log.Printf("failed to get user: %v", err)
 		switch err {
 		case errors.RecordNotFound:
 			w.WriteHeader(http.StatusNotFound)
@@ -84,7 +81,6 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 			Error: "Возникла внутренняя ошибка при создании пользователя",
 		}
 		json.NewEncoder(w).Encode(errorDto)
-		log.Printf("failed to create user: %v\n", err)
 		return
 	}
 
@@ -112,7 +108,6 @@ func ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *http.Request) {
 	for _, val := range userSegment.AddToUser {
 		err = userRepository.AddSegmentToUser(userId, val.Slug, val.DeadlineDate)
 		if err != nil {
-			log.Printf("failed to add segment to user: %v\n", err)
 			switch err {
 			case errors.RecordNotFound:
 				w.WriteHeader(http.StatusNotFound)
@@ -134,7 +129,6 @@ func ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *http.Request) {
 	for _, val := range userSegment.TakeFromUser {
 		err = userRepository.TakeSegmentFromUser(userId, val)
 		if err != nil {
-			log.Printf("failed to take segment from user: %v\n", err)
 			switch err {
 			case errors.RecordNotFound:
 				w.WriteHeader(http.StatusNotFound)
@@ -165,7 +159,6 @@ func GetActiveSegmentsOfUser(w http.ResponseWriter, r *http.Request) {
 	usersActiveSegments, err := userRepository.GetActiveSegmentsOfUser(userId)
 	w.Header().Add("Content-Type", "application/json")
 	if err != nil {
-		log.Printf("failed to get user's active segments: %v", err)
 		switch err {
 		case errors.RecordNotFound:
 			w.WriteHeader(http.StatusNotFound)

@@ -5,7 +5,6 @@ import (
 	"dynamic-user-segmentation-service/internal/db"
 	"dynamic-user-segmentation-service/internal/errors"
 	"dynamic-user-segmentation-service/internal/models"
-	"dynamic-user-segmentation-service/internal/utils"
 	goErrors "errors"
 )
 
@@ -30,7 +29,7 @@ const (
 )
 
 func (r *PostgresUserRepository) GetAllUsers() ([]*models.User, error) {
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	var users []*models.User
@@ -57,7 +56,7 @@ func (r *PostgresUserRepository) GetAllUsers() ([]*models.User, error) {
 }
 
 func (r *PostgresUserRepository) GetUserById(userId int) (*models.User, error) {
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	user := new(models.User)
@@ -72,7 +71,7 @@ func (r *PostgresUserRepository) GetUserById(userId int) (*models.User, error) {
 }
 
 func (r *PostgresUserRepository) CreateUser(name string) error {
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	_, err := r.db.Query(createUser, name)
@@ -104,7 +103,7 @@ func (r *PostgresUserRepository) CheckIfUserAlreadyHasSegment(userId int, slug s
 
 func (r *PostgresUserRepository) AddSegmentToUser(userId int, slug, ttl string) error {
 	historyRepository := PostgresHistoryRepository{}
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 	var err error
 
@@ -134,7 +133,7 @@ func (r *PostgresUserRepository) AddSegmentToUser(userId int, slug, ttl string) 
 
 func (r *PostgresUserRepository) TakeSegmentFromUser(userId int, slug string) error {
 	historyRepository := PostgresHistoryRepository{}
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	user := new(models.User)
@@ -153,7 +152,7 @@ func (r *PostgresUserRepository) TakeSegmentFromUser(userId int, slug string) er
 }
 
 func (r *PostgresUserRepository) GetActiveSegmentsOfUser(userId int) (*models.UsersActiveSegments, error) {
-	r.db = db.CreateConnection(utils.DbConfig)
+	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	user := new(models.User)
