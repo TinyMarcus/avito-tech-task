@@ -13,10 +13,9 @@ import (
 func GetSegmentsHandler(w http.ResponseWriter, r *http.Request) {
 	segmentRepository := repositories.PostgresSegmentRepository{}
 
-	segments, _ := segmentRepository.GetAllSegments()
+	segments, err := segmentRepository.GetAllSegments()
 
 	w.Header().Add("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(segments)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		errorDto := &models.ErrorDto{
@@ -25,7 +24,9 @@ func GetSegmentsHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(errorDto)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(segments)
 }
 
 func GetSegmentBySlugHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,8 +55,8 @@ func GetSegmentBySlugHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(segment)
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(segment)
 }
 
 func CreateSegmentHandler(w http.ResponseWriter, r *http.Request) {

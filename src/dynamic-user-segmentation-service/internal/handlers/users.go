@@ -24,8 +24,8 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(users)
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(users)
 }
 
 func GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,8 +54,8 @@ func GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(user)
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(user)
 }
 
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -176,6 +176,6 @@ func GetActiveSegmentsOfUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(usersActiveSegments)
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(usersActiveSegments)
 }
