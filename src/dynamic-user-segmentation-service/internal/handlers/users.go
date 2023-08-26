@@ -52,11 +52,11 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			userId	path		int						true	"Идентификатор пользователя"
-//	@Success		200	    {object} 	models.User				"Пользователь с данным идентификатором успешно получен"
-//	@Failure		400		{object}	models.ErrorDto			"Некорректные входные данные"
-//	@Failure		404		{object}	models.ErrorDto			"Пользователь с данным идентификатором не найден"
-//	@Failure		500	    {object}	models.ErrorDto			"Возникла внутренняя ошибка сервера"
+//	@Param			userId	path		int					true	"Идентификатор пользователя"
+//	@Success		200	    {object} 	models.User					"Пользователь с данным идентификатором успешно получен"
+//	@Failure		400		{object}	models.ErrorDto				"Некорректные входные данные"
+//	@Failure		404		{object}	models.ErrorDto				"Пользователь с данным идентификатором не найден"
+//	@Failure		500	    {object}	models.ErrorDto				"Возникла внутренняя ошибка сервера"
 //	@Router			/api/v1/users/{userId} [get]
 func GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
 	userRepository := repositories.PostgresUserRepository{}
@@ -96,10 +96,10 @@ func GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
 //		@Tags			users
 //		@Accept			json
 //		@Produce		json
-//	 	@Param			Информация о пользователе	body	models.CreateUserDto	    true	"Информация о добавляемом пользователе"
-//		@Success		200											"Пользователь успешно создан"
-//		@Failure		400		{object}	models.ErrorDto			"Некорректные входные данные"
-//		@Failure		500	    {object}	models.ErrorDto			"Возникла внутренняя ошибка сервера"
+//	 	@Param			Информация о пользователе	body	models.CreateUserDto	true	"Информация о добавляемом пользователе"
+//		@Success		200																	"Пользователь успешно создан"
+//		@Failure		400		{object}	models.ErrorDto									"Некорректные входные данные"
+//		@Failure		500	    {object}	models.ErrorDto									"Возникла внутренняя ошибка сервера"
 //		@Router			/api/v1/users [post]
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	userRepository := repositories.PostgresUserRepository{}
@@ -138,12 +138,12 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 //		@Tags			users
 //		@Accept			json
 //		@Produce		json
-//		@Param			userId	path		int						true	"Идентификатор пользователя"
-//	 	@Param			Информация о добавляемых и удаляемых сегментах	body	models.ChangeUserSegmentsDto	    true	"Информация о добавляемых и удаляемых сегментах"
-//		@Success		200											"Сегменты пользователя успешно изменены"
-//		@Failure		400		{object}	models.ErrorDto			"Некорректные входные данные"
-//		@Failure		404		{object}	models.ErrorDto			"Пользователь с данным идентификатором не найден"
-//		@Failure		500	    {object}	models.ErrorDto			"Внутренняя ошибка сервера"
+//		@Param			userId	path		int																	true	"Идентификатор пользователя"
+//	 	@Param			Информация о добавляемых и удаляемых сегментах	body	models.ChangeUserSegmentsDto	true	"Информация о добавляемых и удаляемых сегментах"
+//		@Success		200																								"Сегменты пользователя успешно изменены"
+//		@Failure		400		{object}	models.ErrorDto																"Некорректные входные данные"
+//		@Failure		404		{object}	models.ErrorDto																"Пользователь с данным идентификатором не найден"
+//		@Failure		500	    {object}	models.ErrorDto																"Внутренняя ошибка сервера"
 //		@Router			/api/v1/users/{userId}/changeSegmentsOfUser [post]
 func ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *http.Request) {
 	userRepository := repositories.PostgresUserRepository{}
@@ -216,10 +216,10 @@ func ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *http.Request) {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			userId	path		int					true		"Идентификатор пользователя"
-//	@Success		200		{object}	models.UsersActiveSegments		"Активные сегменты пользователя успешно получены"
-//	@Failure		404		{object}	models.ErrorDto					"Пользователь с данным идентификатором не найден"
-//	@Failure		500	    {object}	models.ErrorDto					"Возникла внутренняя ошибка сервера"
+//	@Param			userId	path		int								true	"Идентификатор пользователя"
+//	@Success		200		{object}	models.UsersActiveSegments				"Активные сегменты пользователя успешно получены"
+//	@Failure		404		{object}	models.ErrorDto							"Пользователь с данным идентификатором не найден"
+//	@Failure		500	    {object}	models.ErrorDto							"Возникла внутренняя ошибка сервера"
 //	@Router			/api/v1/users/{userId}/active [get]
 func GetActiveSegmentsOfUser(w http.ResponseWriter, r *http.Request) {
 	userRepository := repositories.PostgresUserRepository{}
