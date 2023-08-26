@@ -1,13 +1,16 @@
 package handlers
 
 import (
+	_ "dynamic-user-segmentation-service/internal/docs"
 	"dynamic-user-segmentation-service/internal/handlers/middlewares"
 	"github.com/gorilla/mux"
+	"github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
 )
 
 func Router(logger *zap.SugaredLogger) *mux.Router {
 	router := mux.NewRouter()
+	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 	router.Use(middlewares.LoggerMiddleware(logger))
 
 	router.HandleFunc("/api/v1/segments", GetSegmentsHandler).Methods("GET")
