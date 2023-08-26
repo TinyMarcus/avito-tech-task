@@ -11,6 +11,12 @@ RUN go mod tidy
 RUN go build -o app ./cmd/dynamic-user-segmentation-service
 
 ENV PORT=8080
+ENV HOST=postgres
+ENV DBPORT=5432
+ENV NAME=postgres
+ENV USER=postgres
+ENV PASSWORD=postgres
+ENV TYPE=postgres
 EXPOSE ${PORT}
 
 ENTRYPOINT ["./app"]

@@ -4,7 +4,6 @@ import (
 	"dynamic-user-segmentation-service/internal/errors"
 	"dynamic-user-segmentation-service/internal/repositories"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"dynamic-user-segmentation-service/internal/models"
@@ -15,12 +14,8 @@ func GetSegmentsHandler(w http.ResponseWriter, r *http.Request) {
 	segmentRepository := repositories.PostgresSegmentRepository{}
 
 	segments, err := segmentRepository.GetAllSegments()
-	if err != nil {
-		log.Printf("failed to get segments: %v", err)
-	}
 
 	w.Header().Add("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(segments)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		errorDto := &models.ErrorDto{
@@ -29,7 +24,9 @@ func GetSegmentsHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(errorDto)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(segments)
 }
 
 func GetSegmentBySlugHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +38,6 @@ func GetSegmentBySlugHandler(w http.ResponseWriter, r *http.Request) {
 	segment, err := segmentRepository.GetSegmentBySlug(slug)
 	w.Header().Add("Content-Type", "application/json")
 	if err != nil {
-		log.Printf("failed to get segment: %v", err)
 		switch err {
 		case errors.RecordNotFound:
 			w.WriteHeader(http.StatusNotFound)
@@ -59,8 +55,8 @@ func GetSegmentBySlugHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(segment)
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(segment)
 }
 
 func CreateSegmentHandler(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +76,6 @@ func CreateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = segmentRepository.CreateSegment(segment.Slug, segment.Description)
 	if err != nil {
-		log.Printf("failed to create segment: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		errorDto := &models.ErrorDto{
 			Error: "Возникла внутренняя ошибка при создании сегмента",
@@ -114,7 +109,6 @@ func UpdateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	err = segmentRepository.UpdateSegment(slug, segment.Description)
 	if err != nil {
 		w.Header().Add("Content-Type", "application/json")
-		log.Printf("failed to update segment: %v", err)
 		switch err {
 		case errors.RecordNotFound:
 			w.WriteHeader(http.StatusNotFound)
@@ -144,7 +138,6 @@ func DeleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := segmentRepository.DeleteSegment(slug)
 	if err != nil {
 		w.Header().Add("Content-Type", "application/json")
-		log.Printf("failed to delete segment: %v", err)
 		switch err {
 		case errors.RecordNotFound:
 			w.WriteHeader(http.StatusNotFound)
