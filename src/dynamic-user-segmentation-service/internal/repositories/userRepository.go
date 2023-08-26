@@ -142,6 +142,10 @@ func (r *PostgresUserRepository) TakeSegmentFromUser(userId int, slug string) er
 		return errors.RecordNotFound
 	}
 
+	if exists := r.CheckIfUserAlreadyHasSegment(userId, slug); exists == false {
+		return nil
+	}
+
 	_, err = r.db.Query(takeSegmentFromUser, userId, slug)
 	if err != nil {
 		return errors.DatabaseWritingError

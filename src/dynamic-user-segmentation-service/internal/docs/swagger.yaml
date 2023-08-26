@@ -1,0 +1,393 @@
+definitions:
+  models.ChangeUserSegmentsDto:
+    description: Информация о добавляемых и удаляемых сегментах пользователя
+    properties:
+      add_to_user:
+        description: Сегменты, которые будут добавляться пользователю (с датами отключения)
+        items:
+          $ref: '#/definitions/models.SegmentWithDeadlineDate'
+        type: array
+      take_from_user:
+        description: Сегменты, которые будут удаляться у пользователя
+        items:
+          type: string
+        type: array
+    type: object
+  models.CreateOrUpdateSegmentDto:
+    description: Информация о сегменте при создании
+    properties:
+      description:
+        description: Описание сегмента
+        type: string
+      slug:
+        description: Название сегмента
+        type: string
+    type: object
+  models.CreateUserDto:
+    description: Информация о пользователе при создании
+    properties:
+      name:
+        description: Имя пользователя
+        type: string
+    type: object
+  models.ErrorDto:
+    description: Информация об ошибке (DTO)
+    properties:
+      error:
+        description: Ошибка
+        type: string
+    type: object
+  models.Segment:
+    description: Информация о сегменте
+    properties:
+      description:
+        description: Описание сегмента
+        type: string
+      id:
+        description: Идентификатор сегмента
+        type: integer
+      slug:
+        description: Название сегмента
+        type: string
+    type: object
+  models.SegmentWithDeadlineDate:
+    description: Информация о сегментах с датой отключения пользователя от сегмента
+    properties:
+      deadline_date:
+        description: Дата отключения пользователя от сегмента
+        type: string
+      slug:
+        description: Название сегмента
+        type: string
+    type: object
+  models.User:
+    description: Информация о пользователе
+    properties:
+      id:
+        description: Идентификатор пользователя
+        type: integer
+      name:
+        description: Имя пользователя
+        type: string
+    type: object
+  models.UsersActiveSegments:
+    description: Информация об активных сегментах пользователя
+    properties:
+      segments:
+        description: Список активных сегментов
+        items:
+          $ref: '#/definitions/models.SegmentWithDeadlineDate'
+        type: array
+      user_id:
+        description: Идентификатор пользователя
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/segments:
+    get:
+      consumes:
+      - application/json
+      description: Получить все сегменты из БД
+      operationId: get-all-segments
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Все сегменты успешно получены
+          schema:
+            items:
+              $ref: '#/definitions/models.Segment'
+            type: array
+        "500":
+          description: Возникла внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+      summary: Получить семгенты
+      tags:
+      - segments
+    post:
+      consumes:
+      - application/json
+      description: Добавить сегмент в БД
+      operationId: create-segment
+      parameters:
+      - description: Информация о добавляемом сегменте
+        in: body
+        name: сегменте
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateOrUpdateSegmentDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Сегмент успешно создан
+        "400":
+          description: Некорректные входные данные
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "500":
+          description: Возникла внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+      summary: Добавить сегмент
+      tags:
+      - segments
+  /api/v1/segments/{slug}:
+    delete:
+      consumes:
+      - application/json
+      description: Удалить сегмент в БД
+      operationId: delete-segment
+      parameters:
+      - description: Название сегмента
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Сегмент с данным названием успешно удален
+        "400":
+          description: Некорректные входные данные
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "404":
+          description: Сегмент с данным названием не найден
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "500":
+          description: Возникла внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+      summary: Удалить сегмент
+      tags:
+      - segments
+    get:
+      consumes:
+      - application/json
+      description: Получить сегмент из БД по названию
+      operationId: get-segment-by-name
+      parameters:
+      - description: Название сегмента
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Сегмент с данным названием успешно получен
+          schema:
+            $ref: '#/definitions/models.Segment'
+        "400":
+          description: Некорректные входные данные
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "404":
+          description: Сегмент с данным названием не найден
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "500":
+          description: Возникла внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+      summary: Получить сегмент
+      tags:
+      - segments
+    patch:
+      consumes:
+      - application/json
+      description: Обновить сегмент в БД
+      operationId: update-segment
+      parameters:
+      - description: Название сегмента
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: Информация о добавляемом сегменте
+        in: body
+        name: сегменте
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateOrUpdateSegmentDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Сегмент с данным названием успешно обновлен
+        "400":
+          description: Некорректные входные данные
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "404":
+          description: Сегмент с данным названием не найден
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "500":
+          description: Возникла внутренняя ошибка сервреа
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+      summary: Обновить сегмент
+      tags:
+      - segments
+  /api/v1/users:
+    get:
+      consumes:
+      - application/json
+      description: Получить всех пользователей из БД
+      operationId: get-all-users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Все пользователи успешно получены
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "500":
+          description: Возникла внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+      summary: Получить пользователей
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Добавить пользователя в БД
+      operationId: create-user
+      parameters:
+      - description: Информация о добавляемом пользователе
+        in: body
+        name: пользователе
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пользователь успешно создан
+        "400":
+          description: Некорректные входные данные
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "500":
+          description: Возникла внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+      summary: Добавить пользователя
+      tags:
+      - users
+  /api/v1/users/{userId}:
+    get:
+      consumes:
+      - application/json
+      description: Получить пользователя из БД по идентификатору
+      operationId: get-user-by-id
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пользователь с данным идентификатором успешно получен
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Некорректные входные данные
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "404":
+          description: Пользователь с данным идентификатором не найден
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "500":
+          description: Возникла внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+      summary: Получить пользователя
+      tags:
+      - users
+  /api/v1/users/{userId}/active:
+    get:
+      consumes:
+      - application/json
+      description: Получить из БД активные сегменты пользователя, в которых он участвует
+        на момент запроса
+      operationId: get-active-segments-of-user
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Активные сегменты пользователя успешно получены
+          schema:
+            $ref: '#/definitions/models.UsersActiveSegments'
+        "404":
+          description: Пользователь с данным идентификатором не найден
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "500":
+          description: Возникла внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+      summary: Получить активные сегменты пользователя
+      tags:
+      - users
+  /api/v1/users/{userId}/changeSegmentsOfUser:
+    post:
+      consumes:
+      - application/json
+      description: Добавить и удалить у пользователя указанные сегменты
+      operationId: change-segments-of-user
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Информация о добавляемых и удаляемых сегментах
+        in: body
+        name: сегментах
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChangeUserSegmentsDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Сегменты пользователя успешно изменены
+        "400":
+          description: Некорректные входные данные
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "404":
+          description: Пользователь с данным идентификатором не найден
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/models.ErrorDto'
+      summary: Изменить сегменты пользователя
+      tags:
+      - users
+swagger: "2.0"
