@@ -13,4 +13,4 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Build
-        run: make build
+        run: cd src/dynamic-user-segmentation-service && make build
