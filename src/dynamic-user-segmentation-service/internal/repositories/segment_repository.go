@@ -13,8 +13,8 @@ import (
 type SegmentRepository interface {
 	GetAllSegments() ([]*models.Segment, error)
 	GetSegmentBySlug(slug string) (*models.Segment, error)
-	CreateSegment(slug, description string) error
-	UpdateSegment(slug, description string) error
+	CreateSegment(slug, description string) (string, error)
+	UpdateSegment(slug, description string) (*models.Segment, error)
 	DeleteSegment(slug string) (*models.Segment, error)
 }
 
@@ -83,40 +83,46 @@ func (r *PostgresSegmentRepository) CheckIfSegmentAlreadyExists(slug string) boo
 	return true
 }
 
-func (r *PostgresSegmentRepository) CreateSegment(slug, description string) error {
+func (r *PostgresSegmentRepository) CreateSegment(slug, description string) (string, error) {
 	r.db = db.CreateConnection()
 	defer r.db.Close()
 
 	if exists := r.CheckIfSegmentAlreadyExists(slug); exists == false {
-		_, err := r.db.Query(createSegment, slug, description)
-		if err != nil {
-			return errors.DatabaseWritingError
+		row := r.db.QueryRow(createSegment, slug, description)
+		if err := row.Scan(&slug); err != nil {
+			return "", errors.DatabaseWritingError
 		}
 
-		return nil
+		return slug, nil
 	} else {
-		return errors.RecordAlreadyExists
+		return "", errors.RecordAlreadyExists
 	}
 }
 
-func (r *PostgresSegmentRepository) UpdateSegment(slug, description string) error {
+func (r *PostgresSegmentRepository) UpdateSegment(slug, description string) (*models.Segment, error) {
 	r.db = db.CreateConnection()
 	defer r.db.Close()
 
-	updated := new(models.Segment)
-	err := r.db.QueryRow(selectSegmentBySlug, slug).Scan(&updated.Id, &updated.Slug, &updated.Description)
+	updating := new(models.Segment)
+	err := r.db.QueryRow(selectSegmentBySlug, slug).Scan(&updating.Id, &updating.Slug, &updating.Description)
 	if err != nil {
 		if goErrors.Is(err, sql.ErrNoRows) {
-			return errors.RecordNotFound
+			return nil, errors.RecordNotFound
 		}
 	}
 
 	_, err = r.db.Exec(updateSegment, description, slug)
 	if err != nil {
-		return errors.DatabaseWritingError
+		return nil, errors.DatabaseWritingError
 	}
 
-	return nil
+	updated := &models.Segment{
+		Id:          updating.Id,
+		Slug:        slug,
+		Description: description,
+	}
+
+	return updated, nil
 }
 
 func (r *PostgresSegmentRepository) DeleteSegment(slug string) (*models.Segment, error) {

@@ -97,9 +97,9 @@ func GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
 //		@Accept			json
 //		@Produce		json
 //	 	@Param			Информация о пользователе	body	models.CreateUserDto	    true	"Информация о добавляемом пользователе"
-//		@Success		201											"Пользователь успешно создан"
-//		@Failure		400		{object}	models.ErrorDto			"Некорректные входные данные"
-//		@Failure		500	    {object}	models.ErrorDto			"Возникла внутренняя ошибка сервера"
+//		@Success		201		{object}	models.CreateUserResponseDto						"Пользователь успешно создан"
+//		@Failure		400		{object}	models.ErrorDto										"Некорректные входные данные"
+//		@Failure		500	    {object}	models.ErrorDto										"Возникла внутренняя ошибка сервера"
 //		@Router			/api/v1/users [post]
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	userRepository := repositories.PostgresUserRepository{}
@@ -117,7 +117,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = userRepository.CreateUser(user.Name)
+	id, err := userRepository.CreateUser(user.Name)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		errorDto := &models.ErrorDto{
@@ -127,7 +127,12 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	createUserResponseDto := models.CreateUserResponseDto{
+		Id: id,
+	}
+
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(createUserResponseDto)
 }
 
 // ChangeSegmentsOfUserHandler godoc

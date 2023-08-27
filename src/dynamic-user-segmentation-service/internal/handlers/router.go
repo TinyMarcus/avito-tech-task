@@ -16,7 +16,7 @@ func Router(logger *zap.SugaredLogger) *mux.Router {
 	router.HandleFunc("/api/v1/segments", GetSegmentsHandler).Methods("GET")
 	router.HandleFunc("/api/v1/segments/{slug}", GetSegmentBySlugHandler).Methods("GET")
 	router.HandleFunc("/api/v1/segments", CreateSegmentHandler).Methods("POST")
-	router.HandleFunc("/api/v1/segments/{slug}", UpdateSegmentHandler).Methods("PATCH")
+	router.HandleFunc("/api/v1/segments/{slug}", UpdateSegmentHandler).Methods("PUT")
 	router.HandleFunc("/api/v1/segments/{slug}", DeleteSegmentHandler).Methods("DELETE")
 
 	router.HandleFunc("/api/v1/users", GetUsersHandler).Methods("GET")

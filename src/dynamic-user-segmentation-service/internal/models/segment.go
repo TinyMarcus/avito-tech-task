@@ -23,6 +23,20 @@ type CreateOrUpdateSegmentDto struct {
 	Description string `json:"description,omitempty"` // Описание сегмента
 }
 
+// CreateSegmentResponseDto model info
+// @Description Информация о сегменте при создании
+type CreateSegmentResponseDto struct {
+	Slug string `json:"slug"` // Название сегмента
+}
+
+// UpdateSegmentResponseDto model info
+// @Description Информация о сегменте при обновлении
+type UpdateSegmentResponseDto struct {
+	Id          int    `json:"id,omitempty"`          // Идентификатор сегмента
+	Slug        string `json:"slug"`                  // Название сегмента
+	Description string `json:"description,omitempty"` // Описание сегмента
+}
+
 // SegmentWithDeadlineDate model info
 // @Description Информация о сегментах с датой отключения пользователя от сегмента
 type SegmentWithDeadlineDate struct {

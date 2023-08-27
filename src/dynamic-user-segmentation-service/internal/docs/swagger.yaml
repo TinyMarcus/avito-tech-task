@@ -200,7 +200,7 @@ paths:
       summary: Получить сегмент
       tags:
       - segments
-    patch:
+    put:
       consumes:
       - application/json
       description: Обновить сегмент в БД
