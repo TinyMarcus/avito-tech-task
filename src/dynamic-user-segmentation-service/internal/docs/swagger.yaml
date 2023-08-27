@@ -122,7 +122,7 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
+        "201":
           description: Сегмент успешно создан
         "400":
           description: Некорректные входные данные
@@ -274,7 +274,7 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
+        "201":
           description: Пользователь успешно создан
         "400":
           description: Некорректные входные данные

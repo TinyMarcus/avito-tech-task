@@ -97,7 +97,7 @@ func GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
 //		@Accept			json
 //		@Produce		json
 //	 	@Param			Информация о пользователе	body	models.CreateUserDto	    true	"Информация о добавляемом пользователе"
-//		@Success		200											"Пользователь успешно создан"
+//		@Success		201											"Пользователь успешно создан"
 //		@Failure		400		{object}	models.ErrorDto			"Некорректные входные данные"
 //		@Failure		500	    {object}	models.ErrorDto			"Возникла внутренняя ошибка сервера"
 //		@Router			/api/v1/users [post]
@@ -127,7 +127,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 }
 
 // ChangeSegmentsOfUserHandler godoc
