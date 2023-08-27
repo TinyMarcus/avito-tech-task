@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Build
-        run: cd src/dynamic-user-segmentation-service && make build
+        run: make build
   test:
     name: test
     runs-on: ubuntu-22.04
@@ -25,4 +25,4 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Run tests
-        run: cd src/dynamic-user-segmentation-service && make test
+        run: make test

@@ -18,7 +18,7 @@ services:
   dynamic-user-segmentation-service:
     container_name: dynamic-user-segmentation-service
     build:
-      context: src/dynamic-user-segmentation-service
+      context: ./
     ports:
       - "8080:8080"
     depends_on:
