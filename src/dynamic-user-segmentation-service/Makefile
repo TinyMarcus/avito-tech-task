@@ -6,5 +6,5 @@ build:
 run:
 	docker-compose up $(APP)
 
-run_test:
+test:
 	go test ./... -cover
