@@ -98,7 +98,7 @@ func GetSegmentBySlugHandler(w http.ResponseWriter, r *http.Request) {
 //		@Accept			json
 //		@Produce		json
 //	 	@Param			Информация о сегменте 	body	models.CreateOrUpdateSegmentDto	    true	"Информация о добавляемом сегменте"
-//		@Success		200											"Сегмент успешно создан"
+//		@Success		201											"Сегмент успешно создан"
 //		@Failure		400		{object}	models.ErrorDto			"Некорректные входные данные"
 //		@Failure		500	    {object}	models.ErrorDto			"Возникла внутренняя ошибка сервера"
 //		@Router			/api/v1/segments [post]
@@ -128,7 +128,7 @@ func CreateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 }
 
 // UpdateSegmentHandler godoc

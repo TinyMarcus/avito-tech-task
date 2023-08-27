@@ -1,9 +1,9 @@
 package repositories
 
 import (
-	"database/sql"
 	"dynamic-user-segmentation-service/internal/db"
 	"dynamic-user-segmentation-service/internal/errors"
+	"github.com/jmoiron/sqlx"
 	"time"
 )
 
@@ -14,7 +14,7 @@ type HistoryRepository interface {
 }
 
 type PostgresHistoryRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
 const (

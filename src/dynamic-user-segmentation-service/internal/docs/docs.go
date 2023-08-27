@@ -73,7 +73,7 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "Сегмент успешно создан"
                     },
                     "400": {
@@ -300,7 +300,7 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "Пользователь успешно создан"
                     },
                     "400": {

@@ -1,7 +1,7 @@
-SELECT 'CREATE DATABASE "dynamic-user-segmentation"'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'dynamic-user-segmentation')\gexec
+SELECT 'CREATE DATABASE "dynamic-user-segmentation-tests"'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'dynamic-user-segmentation-tests')\gexec
 
-\connect "dynamic-user-segmentation";
+\connect "dynamic-user-segmentation-tests";
 
 CREATE TABLE IF NOT EXISTS users (
     id serial PRIMARY KEY,

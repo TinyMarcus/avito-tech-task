@@ -6,8 +6,10 @@ import (
 	"dynamic-user-segmentation-service/internal/errors"
 	"dynamic-user-segmentation-service/internal/models"
 	goErrors "errors"
+	"github.com/jmoiron/sqlx"
 )
 
+//go:generate mockgen -source=segment_repository.go -destination ./mocks/segment_repository.go
 type SegmentRepository interface {
 	GetAllSegments() ([]*models.Segment, error)
 	GetSegmentBySlug(slug string) (*models.Segment, error)
@@ -17,7 +19,7 @@ type SegmentRepository interface {
 }
 
 type PostgresSegmentRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
 const (

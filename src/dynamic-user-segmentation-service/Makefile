@@ -1,5 +1,10 @@
-build:
-	@go build -mod readonly -o ./bin/dynamic-user-segmentation-service ./cmd/dynamic-user-segmentation-service/main.go
+APP=dynamic-user-segmentation-service
 
-test:
-	@go test -race -cover ./... -v
+build:
+	docker-compose build $(APP)
+
+run:
+	docker-compose up $(APP)
+
+run_test:
+	go test ./... -cover
