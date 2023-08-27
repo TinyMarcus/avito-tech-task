@@ -98,9 +98,9 @@ func GetSegmentBySlugHandler(w http.ResponseWriter, r *http.Request) {
 //		@Accept			json
 //		@Produce		json
 //	 	@Param			Информация о сегменте 	body	models.CreateOrUpdateSegmentDto	    true	"Информация о добавляемом сегменте"
-//		@Success		201											"Сегмент успешно создан"
-//		@Failure		400		{object}	models.ErrorDto			"Некорректные входные данные"
-//		@Failure		500	    {object}	models.ErrorDto			"Возникла внутренняя ошибка сервера"
+//		@Success		201		{object}	models.CreateSegmentResponseDto		"Сегмент успешно создан"
+//		@Failure		400		{object}	models.ErrorDto						"Некорректные входные данные"
+//		@Failure		500	    {object}	models.ErrorDto						"Возникла внутренняя ошибка сервера"
 //		@Router			/api/v1/segments [post]
 func CreateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	segmentRepository := repositories.PostgresSegmentRepository{}
@@ -118,7 +118,7 @@ func CreateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = segmentRepository.CreateSegment(segment.Slug, segment.Description)
+	slug, err := segmentRepository.CreateSegment(segment.Slug, segment.Description)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		errorDto := &models.ErrorDto{
@@ -128,7 +128,12 @@ func CreateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	createResponseDto := models.CreateSegmentResponseDto{
+		Slug: slug,
+	}
+
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(createResponseDto)
 }
 
 // UpdateSegmentHandler godoc
@@ -139,13 +144,13 @@ func CreateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 //		@Tags			segments
 //		@Accept			json
 //		@Produce		json
-//		@Param			slug	path		string					true	"Название сегмента"
+//		@Param			slug	path		string					true		"Название сегмента"
 //	 	@Param			Информация о сегменте	body	models.CreateOrUpdateSegmentDto	    true	"Информация о добавляемом сегменте"
-//		@Success		200											"Сегмент с данным названием успешно обновлен"
-//		@Failure		400		{object}	models.ErrorDto			"Некорректные входные данные"
-//		@Failure		404		{object}	models.ErrorDto			"Сегмент с данным названием не найден"
-//		@Failure		500	    {object}	models.ErrorDto			"Возникла внутренняя ошибка сервреа"
-//		@Router			/api/v1/segments/{slug} [patch]
+//		@Success		200		{object}	models.UpdateSegmentResponseDto		"Сегмент с данным названием успешно обновлен"
+//		@Failure		400		{object}	models.ErrorDto						"Некорректные входные данные"
+//		@Failure		404		{object}	models.ErrorDto						"Сегмент с данным названием не найден"
+//		@Failure		500	    {object}	models.ErrorDto						"Возникла внутренняя ошибка сервреа"
+//		@Router			/api/v1/segments/{slug} [put]
 func UpdateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	segmentRepository := repositories.PostgresSegmentRepository{}
 
@@ -165,7 +170,7 @@ func UpdateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = segmentRepository.UpdateSegment(slug, segment.Description)
+	updated, err := segmentRepository.UpdateSegment(slug, segment.Description)
 	if err != nil {
 		switch err {
 		case errors.RecordNotFound:
@@ -184,7 +189,14 @@ func UpdateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	updateResponseDto := models.UpdateSegmentResponseDto{
+		Id:          updated.Id,
+		Slug:        updated.Slug,
+		Description: updated.Description,
+	}
+
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(updateResponseDto)
 }
 
 // DeleteSegmentHandler godoc
@@ -195,11 +207,11 @@ func UpdateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 //	@Tags			segments
 //	@Accept			json
 //	@Produce		json
-//	@Param			slug	path		string					true	"Название сегмента"
-//	@Success		204											"Сегмент с данным названием успешно удален"
-//	@Failure		400		{object}	models.ErrorDto			"Некорректные входные данные"
-//	@Failure		404		{object}	models.ErrorDto			"Сегмент с данным названием не найден"
-//	@Failure		500	    {object}	models.ErrorDto			"Возникла внутренняя ошибка сервера"
+//	@Param			slug	path		string					true		"Название сегмента"
+//	@Success		204														"Сегмент с данным названием успешно удален"
+//	@Failure		400		{object}	models.ErrorDto						"Некорректные входные данные"
+//	@Failure		404		{object}	models.ErrorDto						"Сегмент с данным названием не найден"
+//	@Failure		500	    {object}	models.ErrorDto						"Возникла внутренняя ошибка сервера"
 //	@Router			/api/v1/segments/{slug} [delete]
 func DeleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	segmentRepository := repositories.PostgresSegmentRepository{}

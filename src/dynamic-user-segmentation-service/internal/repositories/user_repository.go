@@ -72,16 +72,17 @@ func (r *PostgresUserRepository) GetUserById(userId int) (*models.User, error) {
 	return user, nil
 }
 
-func (r *PostgresUserRepository) CreateUser(name string) error {
+func (r *PostgresUserRepository) CreateUser(name string) (int, error) {
+	var id int
 	r.db = db.CreateConnection()
 	defer r.db.Close()
 
-	_, err := r.db.Query(createUser, name)
-	if err != nil {
-		return errors.DatabaseWritingError
+	row := r.db.QueryRow(createUser, name)
+	if err := row.Scan(&id); err != nil {
+		return 0, errors.DatabaseWritingError
 	}
 
-	return nil
+	return id, nil
 }
 
 const (

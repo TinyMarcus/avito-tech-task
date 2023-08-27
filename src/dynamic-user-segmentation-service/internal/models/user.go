@@ -12,3 +12,9 @@ type User struct {
 type CreateUserDto struct {
 	Name string `json:"name"` // Имя пользователя
 }
+
+// CreateUserResponseDto model info
+// @Description Информация о пользователе при создании
+type CreateUserResponseDto struct {
+	Id int `json:"id"` // Идентификатор пользователя
+}

@@ -187,7 +187,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "patch": {
+            "put": {
                 "description": "Обновить сегмент в БД",
                 "consumes": [
                     "application/json"
