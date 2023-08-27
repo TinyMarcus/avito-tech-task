@@ -30,7 +30,7 @@ func LoggerMiddleware(log *zap.SugaredLogger) mux.MiddlewareFunc {
 			if status >= 500 {
 				requestLog.
 					With("status", status).
-					Warnf("request failed with duration %f seconds", duration.Seconds())
+					Errorf("request failed with duration %f seconds", duration.Seconds())
 			} else {
 				requestLog.
 					With("status", status).
