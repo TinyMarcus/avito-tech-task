@@ -1,7 +1,10 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "Dynamic User Segmentation Service",
+        "title": "Dynamic User Segmentation Service",
+        "contact": {},
+        "version": "1.0"
     },
     "paths": {
         "/api/v1/segments": {
@@ -24,14 +27,14 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Segment"
+                                "$ref": "#/definitions/dtos.SegmentDto"
                             }
                         }
                     },
                     "500": {
                         "description": "Возникла внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     }
                 }
@@ -52,28 +55,31 @@
                 "parameters": [
                     {
                         "description": "Информация о добавляемом сегменте",
-                        "name": "сегменте",
+                        "name": "Segment",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateOrUpdateSegmentDto"
+                            "$ref": "#/definitions/dtos.CreateOrUpdateSegmentDto"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Сегмент успешно создан"
+                        "description": "Сегмент успешно создан",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CreateSegmentResponseDto"
+                        }
                     },
                     "400": {
                         "description": "Некорректные входные данные",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     },
                     "500": {
                         "description": "Возникла внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     }
                 }
@@ -106,25 +112,83 @@
                     "200": {
                         "description": "Сегмент с данным названием успешно получен",
                         "schema": {
-                            "$ref": "#/definitions/models.Segment"
+                            "$ref": "#/definitions/dtos.SegmentDto"
                         }
                     },
                     "400": {
                         "description": "Некорректные входные данные",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     },
                     "404": {
                         "description": "Сегмент с данным названием не найден",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     },
                     "500": {
                         "description": "Возникла внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Обновить сегмент в БД",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "segments"
+                ],
+                "summary": "Обновить сегмент",
+                "operationId": "update-segment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Название сегмента",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Информация о добавляемом сегменте",
+                        "name": "сегменте",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CreateOrUpdateSegmentDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Сегмент с данным названием успешно обновлен",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UpdateSegmentResponseDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректные входные данные",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorDto"
+                        }
+                    },
+                    "404": {
+                        "description": "Сегмент с данным названием не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorDto"
+                        }
+                    },
+                    "500": {
+                        "description": "Возникла внутренняя ошибка сервреа",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     }
                 }
@@ -158,74 +222,19 @@
                     "400": {
                         "description": "Некорректные входные данные",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     },
                     "404": {
                         "description": "Сегмент с данным названием не найден",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     },
                     "500": {
                         "description": "Возникла внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Обновить сегмент в БД",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "segments"
-                ],
-                "summary": "Обновить сегмент",
-                "operationId": "update-segment",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Название сегмента",
-                        "name": "slug",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Информация о добавляемом сегменте",
-                        "name": "сегменте",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CreateOrUpdateSegmentDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Сегмент с данным названием успешно обновлен"
-                    },
-                    "400": {
-                        "description": "Некорректные входные данные",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
-                        }
-                    },
-                    "404": {
-                        "description": "Сегмент с данным названием не найден",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
-                        }
-                    },
-                    "500": {
-                        "description": "Возникла внутренняя ошибка сервреа",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     }
                 }
@@ -251,14 +260,14 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.User"
+                                "$ref": "#/definitions/dtos.UserDto"
                             }
                         }
                     },
                     "500": {
                         "description": "Возникла внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     }
                 }
@@ -279,28 +288,31 @@
                 "parameters": [
                     {
                         "description": "Информация о добавляемом пользователе",
-                        "name": "пользователе",
+                        "name": "User",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateUserDto"
+                            "$ref": "#/definitions/dtos.CreateUserDto"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Пользователь успешно создан"
+                        "description": "Пользователь успешно создан",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CreateUserResponseDto"
+                        }
                     },
                     "400": {
                         "description": "Некорректные входные данные",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     },
                     "500": {
                         "description": "Возникла внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     }
                 }
@@ -333,25 +345,25 @@
                     "200": {
                         "description": "Пользователь с данным идентификатором успешно получен",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/dtos.UserDto"
                         }
                     },
                     "400": {
                         "description": "Некорректные входные данные",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     },
                     "404": {
                         "description": "Пользователь с данным идентификатором не найден",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     },
                     "500": {
                         "description": "Возникла внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     }
                 }
@@ -384,19 +396,19 @@
                     "200": {
                         "description": "Активные сегменты пользователя успешно получены",
                         "schema": {
-                            "$ref": "#/definitions/models.UsersActiveSegments"
+                            "$ref": "#/definitions/dtos.UsersActiveSegments"
                         }
                     },
                     "404": {
                         "description": "Пользователь с данным идентификатором не найден",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     },
                     "500": {
                         "description": "Возникла внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     }
                 }
@@ -430,7 +442,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ChangeUserSegmentsDto"
+                            "$ref": "#/definitions/dtos.ChangeUserSegmentsDto"
                         }
                     }
                 ],
@@ -441,19 +453,19 @@
                     "400": {
                         "description": "Некорректные входные данные",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     },
                     "404": {
                         "description": "Пользователь с данным идентификатором не найден",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     },
                     "500": {
                         "description": "Внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorDto"
+                            "$ref": "#/definitions/dtos.ErrorDto"
                         }
                     }
                 }
@@ -461,7 +473,7 @@
         }
     },
     "definitions": {
-        "models.ChangeUserSegmentsDto": {
+        "dtos.ChangeUserSegmentsDto": {
             "description": "Информация о добавляемых и удаляемых сегментах пользователя",
             "type": "object",
             "properties": {
@@ -469,7 +481,7 @@
                     "description": "Сегменты, которые будут добавляться пользователю (с датами отключения)",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.SegmentWithDeadlineDate"
+                        "$ref": "#/definitions/dtos.SegmentWithDeadlineDate"
                     }
                 },
                 "take_from_user": {
@@ -481,7 +493,7 @@
                 }
             }
         },
-        "models.CreateOrUpdateSegmentDto": {
+        "dtos.CreateOrUpdateSegmentDto": {
             "description": "Информация о сегменте при создании",
             "type": "object",
             "properties": {
@@ -495,7 +507,17 @@
                 }
             }
         },
-        "models.CreateUserDto": {
+        "dtos.CreateSegmentResponseDto": {
+            "description": "Информация о сегменте при создании",
+            "type": "object",
+            "properties": {
+                "slug": {
+                    "description": "Название сегмента",
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.CreateUserDto": {
             "description": "Информация о пользователе при создании",
             "type": "object",
             "properties": {
@@ -505,7 +527,17 @@
                 }
             }
         },
-        "models.ErrorDto": {
+        "dtos.CreateUserResponseDto": {
+            "description": "Информация о пользователе при создании",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Идентификатор пользователя",
+                    "type": "integer"
+                }
+            }
+        },
+        "dtos.ErrorDto": {
             "description": "Информация об ошибке (DTO)",
             "type": "object",
             "properties": {
@@ -515,7 +547,7 @@
                 }
             }
         },
-        "models.Segment": {
+        "dtos.SegmentDto": {
             "description": "Информация о сегменте",
             "type": "object",
             "properties": {
@@ -533,7 +565,7 @@
                 }
             }
         },
-        "models.SegmentWithDeadlineDate": {
+        "dtos.SegmentWithDeadlineDate": {
             "description": "Информация о сегментах с датой отключения пользователя от сегмента",
             "type": "object",
             "properties": {
@@ -547,7 +579,25 @@
                 }
             }
         },
-        "models.User": {
+        "dtos.UpdateSegmentResponseDto": {
+            "description": "Информация о сегменте при обновлении",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "Описание сегмента",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "Идентификатор сегмента",
+                    "type": "integer"
+                },
+                "slug": {
+                    "description": "Название сегмента",
+                    "type": "string"
+                }
+            }
+        },
+        "dtos.UserDto": {
             "description": "Информация о пользователе",
             "type": "object",
             "properties": {
@@ -561,7 +611,7 @@
                 }
             }
         },
-        "models.UsersActiveSegments": {
+        "dtos.UsersActiveSegments": {
             "description": "Информация об активных сегментах пользователя",
             "type": "object",
             "properties": {
@@ -569,7 +619,7 @@
                     "description": "Список активных сегментов",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.SegmentWithDeadlineDate"
+                        "$ref": "#/definitions/dtos.SegmentWithDeadlineDate"
                     }
                 },
                 "user_id": {

@@ -1,11 +1,11 @@
 definitions:
-  models.ChangeUserSegmentsDto:
+  dtos.ChangeUserSegmentsDto:
     description: Информация о добавляемых и удаляемых сегментах пользователя
     properties:
       add_to_user:
         description: Сегменты, которые будут добавляться пользователю (с датами отключения)
         items:
-          $ref: '#/definitions/models.SegmentWithDeadlineDate'
+          $ref: '#/definitions/dtos.SegmentWithDeadlineDate'
         type: array
       take_from_user:
         description: Сегменты, которые будут удаляться у пользователя
@@ -13,7 +13,7 @@ definitions:
           type: string
         type: array
     type: object
-  models.CreateOrUpdateSegmentDto:
+  dtos.CreateOrUpdateSegmentDto:
     description: Информация о сегменте при создании
     properties:
       description:
@@ -23,21 +23,35 @@ definitions:
         description: Название сегмента
         type: string
     type: object
-  models.CreateUserDto:
+  dtos.CreateSegmentResponseDto:
+    description: Информация о сегменте при создании
+    properties:
+      slug:
+        description: Название сегмента
+        type: string
+    type: object
+  dtos.CreateUserDto:
     description: Информация о пользователе при создании
     properties:
       name:
         description: Имя пользователя
         type: string
     type: object
-  models.ErrorDto:
+  dtos.CreateUserResponseDto:
+    description: Информация о пользователе при создании
+    properties:
+      id:
+        description: Идентификатор пользователя
+        type: integer
+    type: object
+  dtos.ErrorDto:
     description: Информация об ошибке (DTO)
     properties:
       error:
         description: Ошибка
         type: string
     type: object
-  models.Segment:
+  dtos.SegmentDto:
     description: Информация о сегменте
     properties:
       description:
@@ -50,7 +64,7 @@ definitions:
         description: Название сегмента
         type: string
     type: object
-  models.SegmentWithDeadlineDate:
+  dtos.SegmentWithDeadlineDate:
     description: Информация о сегментах с датой отключения пользователя от сегмента
     properties:
       deadline_date:
@@ -60,7 +74,20 @@ definitions:
         description: Название сегмента
         type: string
     type: object
-  models.User:
+  dtos.UpdateSegmentResponseDto:
+    description: Информация о сегменте при обновлении
+    properties:
+      description:
+        description: Описание сегмента
+        type: string
+      id:
+        description: Идентификатор сегмента
+        type: integer
+      slug:
+        description: Название сегмента
+        type: string
+    type: object
+  dtos.UserDto:
     description: Информация о пользователе
     properties:
       id:
@@ -70,13 +97,13 @@ definitions:
         description: Имя пользователя
         type: string
     type: object
-  models.UsersActiveSegments:
+  dtos.UsersActiveSegments:
     description: Информация об активных сегментах пользователя
     properties:
       segments:
         description: Список активных сегментов
         items:
-          $ref: '#/definitions/models.SegmentWithDeadlineDate'
+          $ref: '#/definitions/dtos.SegmentWithDeadlineDate'
         type: array
       user_id:
         description: Идентификатор пользователя
@@ -84,6 +111,9 @@ definitions:
     type: object
 info:
   contact: {}
+  description: Dynamic User Segmentation Service
+  title: Dynamic User Segmentation Service
+  version: "1.0"
 paths:
   /api/v1/segments:
     get:
@@ -98,12 +128,12 @@ paths:
           description: Все сегменты успешно получены
           schema:
             items:
-              $ref: '#/definitions/models.Segment'
+              $ref: '#/definitions/dtos.SegmentDto'
             type: array
         "500":
           description: Возникла внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
       summary: Получить семгенты
       tags:
       - segments
@@ -115,23 +145,25 @@ paths:
       parameters:
       - description: Информация о добавляемом сегменте
         in: body
-        name: сегменте
+        name: Segment
         required: true
         schema:
-          $ref: '#/definitions/models.CreateOrUpdateSegmentDto'
+          $ref: '#/definitions/dtos.CreateOrUpdateSegmentDto'
       produces:
       - application/json
       responses:
         "201":
           description: Сегмент успешно создан
+          schema:
+            $ref: '#/definitions/dtos.CreateSegmentResponseDto'
         "400":
           description: Некорректные входные данные
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "500":
           description: Возникла внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
       summary: Добавить сегмент
       tags:
       - segments
@@ -155,15 +187,15 @@ paths:
         "400":
           description: Некорректные входные данные
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "404":
           description: Сегмент с данным названием не найден
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "500":
           description: Возникла внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
       summary: Удалить сегмент
       tags:
       - segments
@@ -184,19 +216,19 @@ paths:
         "200":
           description: Сегмент с данным названием успешно получен
           schema:
-            $ref: '#/definitions/models.Segment'
+            $ref: '#/definitions/dtos.SegmentDto'
         "400":
           description: Некорректные входные данные
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "404":
           description: Сегмент с данным названием не найден
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "500":
           description: Возникла внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
       summary: Получить сегмент
       tags:
       - segments
@@ -216,24 +248,26 @@ paths:
         name: сегменте
         required: true
         schema:
-          $ref: '#/definitions/models.CreateOrUpdateSegmentDto'
+          $ref: '#/definitions/dtos.CreateOrUpdateSegmentDto'
       produces:
       - application/json
       responses:
         "200":
           description: Сегмент с данным названием успешно обновлен
+          schema:
+            $ref: '#/definitions/dtos.UpdateSegmentResponseDto'
         "400":
           description: Некорректные входные данные
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "404":
           description: Сегмент с данным названием не найден
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "500":
           description: Возникла внутренняя ошибка сервреа
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
       summary: Обновить сегмент
       tags:
       - segments
@@ -250,12 +284,12 @@ paths:
           description: Все пользователи успешно получены
           schema:
             items:
-              $ref: '#/definitions/models.User'
+              $ref: '#/definitions/dtos.UserDto'
             type: array
         "500":
           description: Возникла внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
       summary: Получить пользователей
       tags:
       - users
@@ -267,23 +301,25 @@ paths:
       parameters:
       - description: Информация о добавляемом пользователе
         in: body
-        name: пользователе
+        name: User
         required: true
         schema:
-          $ref: '#/definitions/models.CreateUserDto'
+          $ref: '#/definitions/dtos.CreateUserDto'
       produces:
       - application/json
       responses:
         "201":
           description: Пользователь успешно создан
+          schema:
+            $ref: '#/definitions/dtos.CreateUserResponseDto'
         "400":
           description: Некорректные входные данные
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "500":
           description: Возникла внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
       summary: Добавить пользователя
       tags:
       - users
@@ -305,19 +341,19 @@ paths:
         "200":
           description: Пользователь с данным идентификатором успешно получен
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/dtos.UserDto'
         "400":
           description: Некорректные входные данные
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "404":
           description: Пользователь с данным идентификатором не найден
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "500":
           description: Возникла внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
       summary: Получить пользователя
       tags:
       - users
@@ -340,15 +376,15 @@ paths:
         "200":
           description: Активные сегменты пользователя успешно получены
           schema:
-            $ref: '#/definitions/models.UsersActiveSegments'
+            $ref: '#/definitions/dtos.UsersActiveSegments'
         "404":
           description: Пользователь с данным идентификатором не найден
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "500":
           description: Возникла внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
       summary: Получить активные сегменты пользователя
       tags:
       - users
@@ -369,7 +405,7 @@ paths:
         name: сегментах
         required: true
         schema:
-          $ref: '#/definitions/models.ChangeUserSegmentsDto'
+          $ref: '#/definitions/dtos.ChangeUserSegmentsDto'
       produces:
       - application/json
       responses:
@@ -378,15 +414,15 @@ paths:
         "400":
           description: Некорректные входные данные
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "404":
           description: Пользователь с данным идентификатором не найден
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
         "500":
           description: Внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/models.ErrorDto'
+            $ref: '#/definitions/dtos.ErrorDto'
       summary: Изменить сегменты пользователя
       tags:
       - users
