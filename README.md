@@ -32,7 +32,7 @@ git clone https://github.com/TinyMarcus/avito-tech-task.git
 Далее нужно перейти в директорию:
 
 ```
-cd avito-tech-task/src/dynamic-user-segmentation-service
+cd avito-tech-task
 ```
 
 Для быстрого запуска сервиса можно воспользоваться утилитой make, которая произведет сборку и запуск приложения. Приложение будет доступно на порту 8080:
