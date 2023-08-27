@@ -4,25 +4,28 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"os"
 )
 
-func CreateConnection() *sqlx.DB {
+type DatabaseConfig struct {
+	DbHost string `envconfig:"DB_HOST"`
+	DbPort string `envconfig:"DB_PORT"`
+	DbName string `envconfig:"DB_NAME"`
+	DbUser string `envconfig:"DB_USER"`
+	DbPass string `envconfig:"DB_PASS"`
+}
+
+func CreateConnection(config DatabaseConfig) (*sqlx.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		os.Getenv("HOST"),
-		os.Getenv("USER"),
-		os.Getenv("PASSWORD"),
-		os.Getenv("NAME"),
-		os.Getenv("DBPORT"))
-	db, err := sqlx.Open(os.Getenv("TYPE"), dsn)
+		config.DbHost, config.DbUser, config.DbPass, config.DbName, config.DbPort)
+	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return db
+	return db, nil
 }

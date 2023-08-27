@@ -2,24 +2,19 @@ package repositories
 
 import (
 	"database/sql"
-	"dynamic-user-segmentation-service/internal/db"
-	"dynamic-user-segmentation-service/internal/errors"
-	"dynamic-user-segmentation-service/internal/models"
 	goErrors "errors"
+	"github.com/TinyMarcus/avito-tech-task/internal/models"
 	"github.com/jmoiron/sqlx"
 )
 
-//go:generate mockgen -source=segment_repository.go -destination ./mocks/segment_repository.go
-type SegmentRepository interface {
-	GetAllSegments() ([]*models.Segment, error)
-	GetSegmentBySlug(slug string) (*models.Segment, error)
-	CreateSegment(slug, description string) (string, error)
-	UpdateSegment(slug, description string) (*models.Segment, error)
-	DeleteSegment(slug string) (*models.Segment, error)
-}
-
 type PostgresSegmentRepository struct {
 	db *sqlx.DB
+}
+
+func NewSegmentRepository(db *sqlx.DB) *PostgresSegmentRepository {
+	return &PostgresSegmentRepository{
+		db: db,
+	}
 }
 
 const (
@@ -32,24 +27,21 @@ const (
 )
 
 func (r *PostgresSegmentRepository) GetAllSegments() ([]*models.Segment, error) {
-	r.db = db.CreateConnection()
-	defer r.db.Close()
-
 	var segments []*models.Segment
 
 	rows, err := r.db.Query(selectSegments)
 	if err != nil {
-		return nil, errors.DatabaseReadingError
+		return nil, ErrDatabaseReadingError
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, errors.DatabaseReadingError
+		return nil, ErrDatabaseReadingError
 	}
 
 	for rows.Next() {
 		segment := new(models.Segment)
 		if err := rows.Scan(&segment.Id, &segment.Slug, &segment.Description); err != nil {
-			return nil, errors.DatabaseReadingError
+			return nil, ErrDatabaseReadingError
 		}
 		segments = append(segments, segment)
 	}
@@ -59,14 +51,11 @@ func (r *PostgresSegmentRepository) GetAllSegments() ([]*models.Segment, error) 
 }
 
 func (r *PostgresSegmentRepository) GetSegmentBySlug(slug string) (*models.Segment, error) {
-	r.db = db.CreateConnection()
-	defer r.db.Close()
-
 	segment := new(models.Segment)
 	err := r.db.QueryRow(selectSegmentBySlug, slug).Scan(&segment.Id, &segment.Slug, &segment.Description)
 	if err != nil {
 		if goErrors.Is(err, sql.ErrNoRows) {
-			return nil, errors.RecordNotFound
+			return nil, ErrRecordNotFound
 		}
 	}
 
@@ -84,36 +73,30 @@ func (r *PostgresSegmentRepository) CheckIfSegmentAlreadyExists(slug string) boo
 }
 
 func (r *PostgresSegmentRepository) CreateSegment(slug, description string) (string, error) {
-	r.db = db.CreateConnection()
-	defer r.db.Close()
-
 	if exists := r.CheckIfSegmentAlreadyExists(slug); exists == false {
 		row := r.db.QueryRow(createSegment, slug, description)
 		if err := row.Scan(&slug); err != nil {
-			return "", errors.DatabaseWritingError
+			return "", ErrDatabaseWritingError
 		}
 
 		return slug, nil
 	} else {
-		return "", errors.RecordAlreadyExists
+		return "", ErrRecordAlreadyExists
 	}
 }
 
 func (r *PostgresSegmentRepository) UpdateSegment(slug, description string) (*models.Segment, error) {
-	r.db = db.CreateConnection()
-	defer r.db.Close()
-
 	updating := new(models.Segment)
 	err := r.db.QueryRow(selectSegmentBySlug, slug).Scan(&updating.Id, &updating.Slug, &updating.Description)
 	if err != nil {
 		if goErrors.Is(err, sql.ErrNoRows) {
-			return nil, errors.RecordNotFound
+			return nil, ErrRecordNotFound
 		}
 	}
 
 	_, err = r.db.Exec(updateSegment, description, slug)
 	if err != nil {
-		return nil, errors.DatabaseWritingError
+		return nil, ErrDatabaseWritingError
 	}
 
 	updated := &models.Segment{
@@ -126,20 +109,17 @@ func (r *PostgresSegmentRepository) UpdateSegment(slug, description string) (*mo
 }
 
 func (r *PostgresSegmentRepository) DeleteSegment(slug string) (*models.Segment, error) {
-	r.db = db.CreateConnection()
-	defer r.db.Close()
-
 	deleted := new(models.Segment)
 	err := r.db.QueryRow(selectSegmentBySlug, slug).Scan(&deleted.Id, &deleted.Slug, &deleted.Description)
 	if err != nil {
 		if goErrors.Is(err, sql.ErrNoRows) {
-			return nil, errors.RecordNotFound
+			return nil, ErrRecordNotFound
 		}
 	}
 
 	_, err = r.db.Query(deleteSegment, slug)
 	if err != nil {
-		return nil, errors.DatabaseWritingError
+		return nil, ErrDatabaseWritingError
 	}
 
 	return deleted, nil

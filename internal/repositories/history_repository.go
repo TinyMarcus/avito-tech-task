@@ -1,20 +1,26 @@
 package repositories
 
 import (
-	"dynamic-user-segmentation-service/internal/db"
-	"dynamic-user-segmentation-service/internal/errors"
+	goErrors "errors"
 	"github.com/jmoiron/sqlx"
 	"time"
 )
 
-type HistoryRepository interface {
-	SetAddingHistoryRecord(userId int, slug string) error
-	SetRemovingHistoryRecord(userId int, slug string) error
-	// GetHistoryByDate() ([]*models.Segment, error) TODO: сделать получение истории
-}
-
 type PostgresHistoryRepository struct {
 	db *sqlx.DB
+}
+
+var (
+	ErrRecordNotFound       = goErrors.New("Record was not found")
+	ErrDatabaseWritingError = goErrors.New("Error while writing to DB")
+	ErrDatabaseReadingError = goErrors.New("Error while reading from DB")
+	ErrRecordAlreadyExists  = goErrors.New("Record with this data already exists")
+)
+
+func NewHistoryRepository(db *sqlx.DB) *PostgresHistoryRepository {
+	return &PostgresHistoryRepository{
+		db: db,
+	}
 }
 
 const (
@@ -22,24 +28,18 @@ const (
 )
 
 func (r *PostgresHistoryRepository) SetAddingHistoryRecord(userId int, slug string) error {
-	r.db = db.CreateConnection()
-	defer r.db.Close()
-
 	_, err := r.db.Exec(saveRecord, userId, slug, time.Now(), "ADDING")
 	if err != nil {
-		return errors.DatabaseWritingError
+		return ErrDatabaseWritingError
 	}
 
 	return nil
 }
 
 func (r *PostgresHistoryRepository) SetRemovingHistoryRecord(userId int, slug string) error {
-	r.db = db.CreateConnection()
-	defer r.db.Close()
-
 	_, err := r.db.Exec(saveRecord, userId, slug, time.Now(), "REMOVING")
 	if err != nil {
-		return errors.DatabaseWritingError
+		return ErrDatabaseWritingError
 	}
 
 	return nil

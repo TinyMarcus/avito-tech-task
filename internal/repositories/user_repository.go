@@ -2,26 +2,28 @@ package repositories
 
 import (
 	"database/sql"
-	"dynamic-user-segmentation-service/internal/db"
-	"dynamic-user-segmentation-service/internal/errors"
-	"dynamic-user-segmentation-service/internal/models"
 	goErrors "errors"
+	"github.com/TinyMarcus/avito-tech-task/internal/handlers/dtos"
+	"github.com/TinyMarcus/avito-tech-task/internal/models"
 	"github.com/jmoiron/sqlx"
 )
 
-//go:generate mockgen -source=user_repository.go -destination ./mocks/user_repository.go
-type UserRepository interface {
-	GetAllUsers() ([]*models.User, error)
-	GetUserById(userId string) (*models.User, error)
-	CreateUser(name string) error
-	DeleteUser(userId string) (*models.User, error)
-	AddSegmentToUser(userId, slug, ttl string) error
-	TakeSegmentFromUser(userId, slug string) error
-	GetActiveSegmentsOfUser(userId string) ([]*models.UsersActiveSegments, error)
-}
-
 type PostgresUserRepository struct {
 	db *sqlx.DB
+	hr *PostgresHistoryRepository
+}
+
+func NewUserRepository(db *sqlx.DB, hr *PostgresHistoryRepository) *PostgresUserRepository {
+	return &PostgresUserRepository{
+		db: db,
+		hr: hr,
+	}
+}
+
+type HistoryRepository interface {
+	SetAddingHistoryRecord(userId int, slug string) error
+	SetRemovingHistoryRecord(userId int, slug string) error
+	// GetHistoryByDate() ([]*models.Segment, error) TODO: сделать получение истории
 }
 
 const (
@@ -31,24 +33,21 @@ const (
 )
 
 func (r *PostgresUserRepository) GetAllUsers() ([]*models.User, error) {
-	r.db = db.CreateConnection()
-	defer r.db.Close()
-
 	var users []*models.User
 
 	rows, err := r.db.Query(selectUsers)
 	if err != nil {
-		return nil, errors.DatabaseReadingError
+		return nil, ErrDatabaseReadingError
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, errors.DatabaseReadingError
+		return nil, ErrDatabaseReadingError
 	}
 
 	for rows.Next() {
 		user := new(models.User)
 		if err := rows.Scan(&user.Id, &user.Name); err != nil {
-			return nil, errors.DatabaseReadingError
+			return nil, ErrDatabaseReadingError
 		}
 		users = append(users, user)
 	}
@@ -58,14 +57,11 @@ func (r *PostgresUserRepository) GetAllUsers() ([]*models.User, error) {
 }
 
 func (r *PostgresUserRepository) GetUserById(userId int) (*models.User, error) {
-	r.db = db.CreateConnection()
-	defer r.db.Close()
-
 	user := new(models.User)
 	err := r.db.QueryRow(selectUserById, userId).Scan(&user.Id, &user.Name)
 	if err != nil {
 		if goErrors.Is(err, sql.ErrNoRows) {
-			return nil, errors.RecordNotFound
+			return nil, ErrRecordNotFound
 		}
 	}
 
@@ -74,12 +70,10 @@ func (r *PostgresUserRepository) GetUserById(userId int) (*models.User, error) {
 
 func (r *PostgresUserRepository) CreateUser(name string) (int, error) {
 	var id int
-	r.db = db.CreateConnection()
-	defer r.db.Close()
 
 	row := r.db.QueryRow(createUser, name)
 	if err := row.Scan(&id); err != nil {
-		return 0, errors.DatabaseWritingError
+		return 0, ErrDatabaseWritingError
 	}
 
 	return id, nil
@@ -105,15 +99,12 @@ func (r *PostgresUserRepository) CheckIfUserAlreadyHasSegment(userId int, slug s
 }
 
 func (r *PostgresUserRepository) AddSegmentToUser(userId int, slug, ttl string) error {
-	historyRepository := PostgresHistoryRepository{}
-	r.db = db.CreateConnection()
-	defer r.db.Close()
 	var err error
 
 	user := new(models.User)
 	err = r.db.QueryRow(selectUserById, userId).Scan(&user.Id, &user.Name)
 	if err != nil {
-		return errors.RecordNotFound
+		return ErrRecordNotFound
 	}
 
 	if exists := r.CheckIfUserAlreadyHasSegment(userId, slug); exists == true {
@@ -127,22 +118,18 @@ func (r *PostgresUserRepository) AddSegmentToUser(userId int, slug, ttl string) 
 	}
 
 	if err != nil {
-		return errors.DatabaseWritingError
+		return ErrDatabaseWritingError
 	}
 
-	historyRepository.SetAddingHistoryRecord(userId, slug)
+	r.hr.SetAddingHistoryRecord(userId, slug)
 	return nil
 }
 
 func (r *PostgresUserRepository) TakeSegmentFromUser(userId int, slug string) error {
-	historyRepository := PostgresHistoryRepository{}
-	r.db = db.CreateConnection()
-	defer r.db.Close()
-
 	user := new(models.User)
 	err := r.db.QueryRow(selectUserById, userId).Scan(&user.Id, &user.Name)
 	if err != nil {
-		return errors.RecordNotFound
+		return ErrRecordNotFound
 	}
 
 	if exists := r.CheckIfUserAlreadyHasSegment(userId, slug); exists == false {
@@ -151,28 +138,25 @@ func (r *PostgresUserRepository) TakeSegmentFromUser(userId int, slug string) er
 
 	_, err = r.db.Query(takeSegmentFromUser, userId, slug)
 	if err != nil {
-		return errors.DatabaseWritingError
+		return ErrDatabaseWritingError
 	}
 
-	historyRepository.SetRemovingHistoryRecord(userId, slug)
+	r.hr.SetRemovingHistoryRecord(userId, slug)
 	return nil
 }
 
-func (r *PostgresUserRepository) GetActiveSegmentsOfUser(userId int) (*models.UsersActiveSegments, error) {
-	r.db = db.CreateConnection()
-	defer r.db.Close()
-
+func (r *PostgresUserRepository) GetActiveSegmentsOfUser(userId int) (*dtos.UsersActiveSegments, error) {
 	user := new(models.User)
 	err := r.db.QueryRow(selectUserById, userId).Scan(&user.Id, &user.Name)
 	if err != nil {
-		return nil, errors.RecordNotFound
+		return nil, ErrRecordNotFound
 	}
 
 	var segments []*models.UserSegment
 
 	rows, err := r.db.Query(getActiveSegmentsOfUser, userId)
 	if err != nil {
-		return nil, errors.DatabaseReadingError
+		return nil, ErrDatabaseReadingError
 	}
 
 	if err := rows.Err(); err != nil {
@@ -182,11 +166,11 @@ func (r *PostgresUserRepository) GetActiveSegmentsOfUser(userId int) (*models.Us
 	for rows.Next() {
 		segment := new(models.UserSegment)
 		if err := rows.Scan(&segment.UserId, &segment.Slug, &segment.DeadlineDate); err != nil {
-			return nil, errors.DatabaseReadingError
+			return nil, ErrDatabaseReadingError
 		}
 		segments = append(segments, segment)
 	}
 
 	defer rows.Close()
-	return models.ConvertUserSegmentToUsersActiveSegments(userId, segments), nil
+	return dtos.ConvertUserSegmentToUsersActiveSegments(userId, segments), nil
 }

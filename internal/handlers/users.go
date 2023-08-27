@@ -1,14 +1,35 @@
 package handlers
 
 import (
-	"dynamic-user-segmentation-service/internal/errors"
-	"dynamic-user-segmentation-service/internal/models"
-	"dynamic-user-segmentation-service/internal/repositories"
 	"encoding/json"
+	"github.com/TinyMarcus/avito-tech-task/internal/handlers/dtos"
+	"github.com/TinyMarcus/avito-tech-task/internal/models"
+	"github.com/TinyMarcus/avito-tech-task/internal/repositories"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
 )
+
+type UsersHandler struct {
+	repository *repositories.PostgresUserRepository
+}
+
+func NewUsersHandler(r *repositories.PostgresUserRepository) *UsersHandler {
+	return &UsersHandler{
+		repository: r,
+	}
+}
+
+//go:generate mockgen -source=user_repository.go -destination ./mocks/user_repository.go
+type UserRepository interface {
+	GetAllUsers() ([]*models.User, error)
+	GetUserById(userId string) (*models.User, error)
+	CreateUser(name string) error
+	DeleteUser(userId string) (*models.User, error)
+	AddSegmentToUser(userId, slug, ttl string) error
+	TakeSegmentFromUser(userId, slug string) error
+	GetActiveSegmentsOfUser(userId string) ([]*dtos.UsersActiveSegments, error)
+}
 
 // GetUsersHandler godoc
 //
@@ -18,30 +39,34 @@ import (
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	    {array} 	models.User				"Все пользователи успешно получены"
-//	@Failure		500	    {object}	models.ErrorDto			"Возникла внутренняя ошибка сервера"
+//	@Success		200	    {array} 	dtos.UserDto			"Все пользователи успешно получены"
+//	@Failure		500	    {object}	dtos.ErrorDto			"Возникла внутренняя ошибка сервера"
 //	@Router			/api/v1/users [get]
-func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
-	userRepository := repositories.PostgresUserRepository{}
-
-	users, err := userRepository.GetAllUsers()
+func (h *UsersHandler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
+	users, err := h.repository.GetAllUsers()
 	w.Header().Add("Content-Type", "application/json")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		errorDto := &models.ErrorDto{
+		errorDto := &dtos.ErrorDto{
 			Error: "Возникла внутренняя ошибка при запросе всех пользователей",
 		}
 		json.NewEncoder(w).Encode(errorDto)
 		return
 	}
 
+	var usersDtos []*dtos.UserDto
+
 	// TODO: некрасиво, стоит переделать
 	if users == nil {
-		users = []*models.User{}
+		usersDtos = []*dtos.UserDto{}
+	}
+
+	for _, val := range users {
+		usersDtos = append(usersDtos, dtos.ConvertUserToUserDto(val))
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(users)
+	json.NewEncoder(w).Encode(usersDtos)
 }
 
 // GetUserByIdHandler godoc
@@ -53,30 +78,28 @@ func GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			userId	path		int						true	"Идентификатор пользователя"
-//	@Success		200	    {object} 	models.User				"Пользователь с данным идентификатором успешно получен"
-//	@Failure		400		{object}	models.ErrorDto			"Некорректные входные данные"
-//	@Failure		404		{object}	models.ErrorDto			"Пользователь с данным идентификатором не найден"
-//	@Failure		500	    {object}	models.ErrorDto			"Возникла внутренняя ошибка сервера"
+//	@Success		200	    {object} 	dtos.UserDto			"Пользователь с данным идентификатором успешно получен"
+//	@Failure		400		{object}	dtos.ErrorDto			"Некорректные входные данные"
+//	@Failure		404		{object}	dtos.ErrorDto			"Пользователь с данным идентификатором не найден"
+//	@Failure		500	    {object}	dtos.ErrorDto			"Возникла внутренняя ошибка сервера"
 //	@Router			/api/v1/users/{userId} [get]
-func GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
-	userRepository := repositories.PostgresUserRepository{}
-
+func (h *UsersHandler) GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userId, _ := strconv.Atoi(params["userId"])
 
-	user, err := userRepository.GetUserById(userId)
+	user, err := h.repository.GetUserById(userId)
 	w.Header().Add("Content-Type", "application/json")
 	if err != nil {
 		switch err {
-		case errors.RecordNotFound:
+		case repositories.ErrRecordNotFound:
 			w.WriteHeader(http.StatusNotFound)
-			errorDto := &models.ErrorDto{
+			errorDto := &dtos.ErrorDto{
 				Error: "Пользователь с таким идентификатором не найден",
 			}
 			json.NewEncoder(w).Encode(errorDto)
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
-			errorDto := &models.ErrorDto{
+			errorDto := &dtos.ErrorDto{
 				Error: "Возникла внутренняя ошибка при запросе пользователя",
 			}
 			json.NewEncoder(w).Encode(errorDto)
@@ -96,38 +119,36 @@ func GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
 //		@Tags			users
 //		@Accept			json
 //		@Produce		json
-//	 	@Param			Информация о пользователе	body	models.CreateUserDto	    true	"Информация о добавляемом пользователе"
-//		@Success		201		{object}	models.CreateUserResponseDto						"Пользователь успешно создан"
-//		@Failure		400		{object}	models.ErrorDto										"Некорректные входные данные"
-//		@Failure		500	    {object}	models.ErrorDto										"Возникла внутренняя ошибка сервера"
+//	 	@Param			User	body		dtos.CreateUserDto	    true	"Информация о добавляемом пользователе"
+//		@Success		201		{object}	dtos.CreateUserResponseDto						"Пользователь успешно создан"
+//		@Failure		400		{object}	dtos.ErrorDto										"Некорректные входные данные"
+//		@Failure		500	    {object}	dtos.ErrorDto										"Возникла внутренняя ошибка сервера"
 //		@Router			/api/v1/users [post]
-func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	userRepository := repositories.PostgresUserRepository{}
-
-	var user models.CreateUserDto
+func (h *UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
+	var user dtos.CreateUserDto
 
 	w.Header().Add("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		errorDto := &models.ErrorDto{
+		errorDto := &dtos.ErrorDto{
 			Error: "Некорректные входные данные",
 		}
 		json.NewEncoder(w).Encode(errorDto)
 		return
 	}
 
-	id, err := userRepository.CreateUser(user.Name)
+	id, err := h.repository.CreateUser(user.Name)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		errorDto := &models.ErrorDto{
+		errorDto := &dtos.ErrorDto{
 			Error: "Возникла внутренняя ошибка при создании пользователя",
 		}
 		json.NewEncoder(w).Encode(errorDto)
 		return
 	}
 
-	createUserResponseDto := models.CreateUserResponseDto{
+	createUserResponseDto := dtos.CreateUserResponseDto{
 		Id: id,
 	}
 
@@ -144,16 +165,14 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 //		@Accept			json
 //		@Produce		json
 //		@Param			userId	path		int						true	"Идентификатор пользователя"
-//	 	@Param			Информация о добавляемых и удаляемых сегментах	body	models.ChangeUserSegmentsDto	    true	"Информация о добавляемых и удаляемых сегментах"
+//	 	@Param			Информация о добавляемых и удаляемых сегментах	body	dtos.ChangeUserSegmentsDto	    true	"Информация о добавляемых и удаляемых сегментах"
 //		@Success		200											"Сегменты пользователя успешно изменены"
-//		@Failure		400		{object}	models.ErrorDto			"Некорректные входные данные"
-//		@Failure		404		{object}	models.ErrorDto			"Пользователь с данным идентификатором не найден"
-//		@Failure		500	    {object}	models.ErrorDto			"Внутренняя ошибка сервера"
+//		@Failure		400		{object}	dtos.ErrorDto			"Некорректные входные данные"
+//		@Failure		404		{object}	dtos.ErrorDto			"Пользователь с данным идентификатором не найден"
+//		@Failure		500	    {object}	dtos.ErrorDto			"Внутренняя ошибка сервера"
 //		@Router			/api/v1/users/{userId}/changeSegmentsOfUser [post]
-func ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *http.Request) {
-	userRepository := repositories.PostgresUserRepository{}
-
-	var userSegment models.ChangeUserSegmentsDto
+func (h *UsersHandler) ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *http.Request) {
+	var userSegment dtos.ChangeUserSegmentsDto
 	params := mux.Vars(r)
 	userId, _ := strconv.Atoi(params["userId"])
 
@@ -161,7 +180,7 @@ func ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&userSegment)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		errorDto := &models.ErrorDto{
+		errorDto := &dtos.ErrorDto{
 			Error: "Некорректные входные данные",
 		}
 		json.NewEncoder(w).Encode(errorDto)
@@ -169,18 +188,18 @@ func ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, val := range userSegment.AddToUser {
-		err = userRepository.AddSegmentToUser(userId, val.Slug, val.DeadlineDate)
+		err = h.repository.AddSegmentToUser(userId, val.Slug, val.DeadlineDate)
 		if err != nil {
 			switch err {
-			case errors.RecordNotFound:
+			case repositories.ErrRecordNotFound:
 				w.WriteHeader(http.StatusNotFound)
-				errorDto := &models.ErrorDto{
+				errorDto := &dtos.ErrorDto{
 					Error: "Пользователь с таким идентификатором не найден",
 				}
 				json.NewEncoder(w).Encode(errorDto)
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
-				errorDto := &models.ErrorDto{
+				errorDto := &dtos.ErrorDto{
 					Error: "Возникла внутренняя ошибка при добавлении новых сегментов пользователю",
 				}
 				json.NewEncoder(w).Encode(errorDto)
@@ -190,18 +209,18 @@ func ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, val := range userSegment.TakeFromUser {
-		err = userRepository.TakeSegmentFromUser(userId, val)
+		err = h.repository.TakeSegmentFromUser(userId, val)
 		if err != nil {
 			switch err {
-			case errors.RecordNotFound:
+			case repositories.ErrRecordNotFound:
 				w.WriteHeader(http.StatusNotFound)
-				errorDto := &models.ErrorDto{
+				errorDto := &dtos.ErrorDto{
 					Error: "Пользователь с таким идентификатором не найден",
 				}
 				json.NewEncoder(w).Encode(errorDto)
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
-				errorDto := &models.ErrorDto{
+				errorDto := &dtos.ErrorDto{
 					Error: "Возникла внутренняя ошибка при удалении сегментов пользователя",
 				}
 				json.NewEncoder(w).Encode(errorDto)
@@ -222,29 +241,27 @@ func ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *http.Request) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			userId	path		int					true		"Идентификатор пользователя"
-//	@Success		200		{object}	models.UsersActiveSegments		"Активные сегменты пользователя успешно получены"
-//	@Failure		404		{object}	models.ErrorDto					"Пользователь с данным идентификатором не найден"
-//	@Failure		500	    {object}	models.ErrorDto					"Возникла внутренняя ошибка сервера"
+//	@Success		200		{object}	dtos.UsersActiveSegments		"Активные сегменты пользователя успешно получены"
+//	@Failure		404		{object}	dtos.ErrorDto					"Пользователь с данным идентификатором не найден"
+//	@Failure		500	    {object}	dtos.ErrorDto					"Возникла внутренняя ошибка сервера"
 //	@Router			/api/v1/users/{userId}/active [get]
-func GetActiveSegmentsOfUser(w http.ResponseWriter, r *http.Request) {
-	userRepository := repositories.PostgresUserRepository{}
-
+func (h *UsersHandler) GetActiveSegmentsOfUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userId, _ := strconv.Atoi(params["userId"])
 
-	usersActiveSegments, err := userRepository.GetActiveSegmentsOfUser(userId)
+	usersActiveSegments, err := h.repository.GetActiveSegmentsOfUser(userId)
 	w.Header().Add("Content-Type", "application/json")
 	if err != nil {
 		switch err {
-		case errors.RecordNotFound:
+		case repositories.ErrRecordNotFound:
 			w.WriteHeader(http.StatusNotFound)
-			errorDto := &models.ErrorDto{
+			errorDto := &dtos.ErrorDto{
 				Error: "Пользователь с таким идентификатором не найден",
 			}
 			json.NewEncoder(w).Encode(errorDto)
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
-			errorDto := &models.ErrorDto{
+			errorDto := &dtos.ErrorDto{
 				Error: "Возникла внутренняя ошибка при запросе активных сегментов пользователя",
 			}
 			json.NewEncoder(w).Encode(errorDto)
