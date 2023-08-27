@@ -1,9 +1,10 @@
 package config
 
 import (
+	"github.com/kelseyhightower/envconfig"
+
 	"github.com/TinyMarcus/avito-tech-task/internal/db"
 	"github.com/TinyMarcus/avito-tech-task/internal/logger"
-	"github.com/kelseyhightower/envconfig"
 )
 
 type Config struct {

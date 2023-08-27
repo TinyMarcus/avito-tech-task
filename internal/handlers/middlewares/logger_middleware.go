@@ -1,12 +1,13 @@
 package middlewares
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
 	"go.uber.org/zap"
-	"net/http"
-	"time"
 )
 
 func LoggerMiddleware(log *zap.SugaredLogger) mux.MiddlewareFunc {

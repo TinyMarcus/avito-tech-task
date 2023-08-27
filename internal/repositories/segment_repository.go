@@ -3,8 +3,10 @@ package repositories
 import (
 	"database/sql"
 	goErrors "errors"
-	"github.com/TinyMarcus/avito-tech-task/internal/models"
+
 	"github.com/jmoiron/sqlx"
+
+	"github.com/TinyMarcus/avito-tech-task/internal/models"
 )
 
 type PostgresSegmentRepository struct {
@@ -65,15 +67,12 @@ func (r *PostgresSegmentRepository) GetSegmentBySlug(slug string) (*models.Segme
 func (r *PostgresSegmentRepository) CheckIfSegmentAlreadyExists(slug string) bool {
 	segment := new(models.Segment)
 	err := r.db.QueryRow(checkIfSegmentExists, slug).Scan(&segment.Id, &segment.Slug, &segment.Description)
-	if err == sql.ErrNoRows {
-		return false
-	}
 
-	return true
+	return err != sql.ErrNoRows
 }
 
 func (r *PostgresSegmentRepository) CreateSegment(slug, description string) (string, error) {
-	if exists := r.CheckIfSegmentAlreadyExists(slug); exists == false {
+	if exists := r.CheckIfSegmentAlreadyExists(slug); !exists {
 		row := r.db.QueryRow(createSegment, slug, description)
 		if err := row.Scan(&slug); err != nil {
 			return "", ErrDatabaseWritingError

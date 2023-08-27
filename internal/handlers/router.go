@@ -1,13 +1,14 @@
 package handlers
 
 import (
-	_ "github.com/TinyMarcus/avito-tech-task/api"
-	"github.com/TinyMarcus/avito-tech-task/internal/handlers/middlewares"
-	"github.com/TinyMarcus/avito-tech-task/internal/repositories"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
+
+	_ "github.com/TinyMarcus/avito-tech-task/api"
+	"github.com/TinyMarcus/avito-tech-task/internal/handlers/middlewares"
+	"github.com/TinyMarcus/avito-tech-task/internal/repositories"
 )
 
 func Router(logger *zap.SugaredLogger, db *sqlx.DB) *mux.Router {

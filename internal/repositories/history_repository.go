@@ -2,8 +2,9 @@ package repositories
 
 import (
 	goErrors "errors"
-	"github.com/jmoiron/sqlx"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type PostgresHistoryRepository struct {

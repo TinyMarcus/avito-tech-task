@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
+
 	"github.com/TinyMarcus/avito-tech-task/internal/handlers/dtos"
 	"github.com/TinyMarcus/avito-tech-task/internal/models"
 	"github.com/TinyMarcus/avito-tech-task/internal/repositories"
-	"github.com/gorilla/mux"
-	"net/http"
-	"strconv"
 )
 
 type UsersHandler struct {
@@ -50,7 +52,10 @@ func (h *UsersHandler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 		errorDto := &dtos.ErrorDto{
 			Error: "Возникла внутренняя ошибка при запросе всех пользователей",
 		}
-		json.NewEncoder(w).Encode(errorDto)
+		err = json.NewEncoder(w).Encode(errorDto)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -66,7 +71,10 @@ func (h *UsersHandler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(usersDtos)
+	err = json.NewEncoder(w).Encode(usersDtos)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 // GetUserByIdHandler godoc
@@ -96,19 +104,29 @@ func (h *UsersHandler) GetUserByIdHandler(w http.ResponseWriter, r *http.Request
 			errorDto := &dtos.ErrorDto{
 				Error: "Пользователь с таким идентификатором не найден",
 			}
-			json.NewEncoder(w).Encode(errorDto)
+			err = json.NewEncoder(w).Encode(errorDto)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+			}
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 			errorDto := &dtos.ErrorDto{
 				Error: "Возникла внутренняя ошибка при запросе пользователя",
 			}
-			json.NewEncoder(w).Encode(errorDto)
+			err = json.NewEncoder(w).Encode(errorDto)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+			}
 		}
+
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
+	err = json.NewEncoder(w).Encode(user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 // CreateUserHandler godoc
@@ -134,7 +152,11 @@ func (h *UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request)
 		errorDto := &dtos.ErrorDto{
 			Error: "Некорректные входные данные",
 		}
-		json.NewEncoder(w).Encode(errorDto)
+		err = json.NewEncoder(w).Encode(errorDto)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
 		return
 	}
 
@@ -144,7 +166,11 @@ func (h *UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request)
 		errorDto := &dtos.ErrorDto{
 			Error: "Возникла внутренняя ошибка при создании пользователя",
 		}
-		json.NewEncoder(w).Encode(errorDto)
+		err = json.NewEncoder(w).Encode(errorDto)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
 		return
 	}
 
@@ -153,7 +179,10 @@ func (h *UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(createUserResponseDto)
+	err = json.NewEncoder(w).Encode(createUserResponseDto)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 // ChangeSegmentsOfUserHandler godoc
@@ -183,7 +212,11 @@ func (h *UsersHandler) ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *htt
 		errorDto := &dtos.ErrorDto{
 			Error: "Некорректные входные данные",
 		}
-		json.NewEncoder(w).Encode(errorDto)
+		err = json.NewEncoder(w).Encode(errorDto)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
 		return
 	}
 
@@ -196,14 +229,21 @@ func (h *UsersHandler) ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *htt
 				errorDto := &dtos.ErrorDto{
 					Error: "Пользователь с таким идентификатором не найден",
 				}
-				json.NewEncoder(w).Encode(errorDto)
+				err = json.NewEncoder(w).Encode(errorDto)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+				}
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
 				errorDto := &dtos.ErrorDto{
 					Error: "Возникла внутренняя ошибка при добавлении новых сегментов пользователю",
 				}
-				json.NewEncoder(w).Encode(errorDto)
+				err = json.NewEncoder(w).Encode(errorDto)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+				}
 			}
+
 			return
 		}
 	}
@@ -217,14 +257,21 @@ func (h *UsersHandler) ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *htt
 				errorDto := &dtos.ErrorDto{
 					Error: "Пользователь с таким идентификатором не найден",
 				}
-				json.NewEncoder(w).Encode(errorDto)
+				err = json.NewEncoder(w).Encode(errorDto)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+				}
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
 				errorDto := &dtos.ErrorDto{
 					Error: "Возникла внутренняя ошибка при удалении сегментов пользователя",
 				}
-				json.NewEncoder(w).Encode(errorDto)
+				err = json.NewEncoder(w).Encode(errorDto)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+				}
 			}
+
 			return
 		}
 	}
@@ -258,17 +305,27 @@ func (h *UsersHandler) GetActiveSegmentsOfUser(w http.ResponseWriter, r *http.Re
 			errorDto := &dtos.ErrorDto{
 				Error: "Пользователь с таким идентификатором не найден",
 			}
-			json.NewEncoder(w).Encode(errorDto)
+			err = json.NewEncoder(w).Encode(errorDto)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+			}
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 			errorDto := &dtos.ErrorDto{
 				Error: "Возникла внутренняя ошибка при запросе активных сегментов пользователя",
 			}
-			json.NewEncoder(w).Encode(errorDto)
+			err = json.NewEncoder(w).Encode(errorDto)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+			}
 		}
+
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(usersActiveSegments)
+	err = json.NewEncoder(w).Encode(usersActiveSegments)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }

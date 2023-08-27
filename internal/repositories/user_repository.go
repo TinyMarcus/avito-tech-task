@@ -3,9 +3,11 @@ package repositories
 import (
 	"database/sql"
 	goErrors "errors"
+
+	"github.com/jmoiron/sqlx"
+
 	"github.com/TinyMarcus/avito-tech-task/internal/handlers/dtos"
 	"github.com/TinyMarcus/avito-tech-task/internal/models"
-	"github.com/jmoiron/sqlx"
 )
 
 type PostgresUserRepository struct {
@@ -91,11 +93,8 @@ const (
 func (r *PostgresUserRepository) CheckIfUserAlreadyHasSegment(userId int, slug string) bool {
 	userSegment := new(models.UserSegment)
 	err := r.db.QueryRow(checkIfUserHasSegment, userId, slug).Scan(&userSegment.UserId, &userSegment.Slug, &userSegment.DeadlineDate)
-	if err == sql.ErrNoRows {
-		return false
-	}
 
-	return true
+	return err != sql.ErrNoRows
 }
 
 func (r *PostgresUserRepository) AddSegmentToUser(userId int, slug, ttl string) error {
@@ -107,7 +106,7 @@ func (r *PostgresUserRepository) AddSegmentToUser(userId int, slug, ttl string) 
 		return ErrRecordNotFound
 	}
 
-	if exists := r.CheckIfUserAlreadyHasSegment(userId, slug); exists == true {
+	if exists := r.CheckIfUserAlreadyHasSegment(userId, slug); exists {
 		return nil
 	}
 
@@ -121,7 +120,11 @@ func (r *PostgresUserRepository) AddSegmentToUser(userId int, slug, ttl string) 
 		return ErrDatabaseWritingError
 	}
 
-	r.hr.SetAddingHistoryRecord(userId, slug)
+	err = r.hr.SetAddingHistoryRecord(userId, slug)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -132,7 +135,7 @@ func (r *PostgresUserRepository) TakeSegmentFromUser(userId int, slug string) er
 		return ErrRecordNotFound
 	}
 
-	if exists := r.CheckIfUserAlreadyHasSegment(userId, slug); exists == false {
+	if exists := r.CheckIfUserAlreadyHasSegment(userId, slug); !exists {
 		return nil
 	}
 
@@ -141,7 +144,11 @@ func (r *PostgresUserRepository) TakeSegmentFromUser(userId int, slug string) er
 		return ErrDatabaseWritingError
 	}
 
-	r.hr.SetRemovingHistoryRecord(userId, slug)
+	err = r.hr.SetRemovingHistoryRecord(userId, slug)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
