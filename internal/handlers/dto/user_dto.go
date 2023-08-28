@@ -1,4 +1,4 @@
-package dtos
+package dto
 
 import "github.com/TinyMarcus/avito-tech-task/internal/models"
 

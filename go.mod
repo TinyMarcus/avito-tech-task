@@ -1,6 +1,6 @@
 module github.com/TinyMarcus/avito-tech-task
 
-go 1.19
+go 1.21
 
 require (
 	github.com/golang-migrate/migrate/v4 v4.16.2

@@ -2,20 +2,20 @@ package repositories
 
 import (
 	"database/sql"
-	goErrors "errors"
+	"errors"
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/TinyMarcus/avito-tech-task/internal/handlers/dtos"
+	"github.com/TinyMarcus/avito-tech-task/internal/handlers/dto"
 	"github.com/TinyMarcus/avito-tech-task/internal/models"
 )
 
 type PostgresUserRepository struct {
 	db *sqlx.DB
-	hr *PostgresHistoryRepository
+	hr HistoryRepository
 }
 
-func NewUserRepository(db *sqlx.DB, hr *PostgresHistoryRepository) *PostgresUserRepository {
+func NewUserRepository(db *sqlx.DB, hr HistoryRepository) *PostgresUserRepository {
 	return &PostgresUserRepository{
 		db: db,
 		hr: hr,
@@ -62,7 +62,7 @@ func (r *PostgresUserRepository) GetUserById(userId int) (*models.User, error) {
 	user := new(models.User)
 	err := r.db.QueryRow(selectUserById, userId).Scan(&user.Id, &user.Name)
 	if err != nil {
-		if goErrors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrRecordNotFound
 		}
 	}
@@ -152,7 +152,7 @@ func (r *PostgresUserRepository) TakeSegmentFromUser(userId int, slug string) er
 	return nil
 }
 
-func (r *PostgresUserRepository) GetActiveSegmentsOfUser(userId int) (*dtos.UsersActiveSegments, error) {
+func (r *PostgresUserRepository) GetActiveSegmentsOfUser(userId int) (*dto.UsersActiveSegments, error) {
 	user := new(models.User)
 	err := r.db.QueryRow(selectUserById, userId).Scan(&user.Id, &user.Name)
 	if err != nil {
@@ -179,5 +179,5 @@ func (r *PostgresUserRepository) GetActiveSegmentsOfUser(userId int) (*dtos.User
 	}
 
 	defer rows.Close()
-	return dtos.ConvertUserSegmentToUsersActiveSegments(userId, segments), nil
+	return dto.ConvertUserSegmentToUsersActiveSegments(userId, segments), nil
 }

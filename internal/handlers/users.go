@@ -7,16 +7,16 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/TinyMarcus/avito-tech-task/internal/handlers/dtos"
+	"github.com/TinyMarcus/avito-tech-task/internal/handlers/dto"
 	"github.com/TinyMarcus/avito-tech-task/internal/models"
 	"github.com/TinyMarcus/avito-tech-task/internal/repositories"
 )
 
 type UsersHandler struct {
-	repository *repositories.PostgresUserRepository
+	repository UserRepository
 }
 
-func NewUsersHandler(r *repositories.PostgresUserRepository) *UsersHandler {
+func NewUsersHandler(r UserRepository) *UsersHandler {
 	return &UsersHandler{
 		repository: r,
 	}
@@ -25,12 +25,11 @@ func NewUsersHandler(r *repositories.PostgresUserRepository) *UsersHandler {
 //go:generate mockgen -source=user_repository.go -destination ./mocks/user_repository.go
 type UserRepository interface {
 	GetAllUsers() ([]*models.User, error)
-	GetUserById(userId string) (*models.User, error)
-	CreateUser(name string) error
-	DeleteUser(userId string) (*models.User, error)
-	AddSegmentToUser(userId, slug, ttl string) error
-	TakeSegmentFromUser(userId, slug string) error
-	GetActiveSegmentsOfUser(userId string) ([]*dtos.UsersActiveSegments, error)
+	GetUserById(userId int) (*models.User, error)
+	CreateUser(name string) (int, error)
+	AddSegmentToUser(userId int, slug, ttl string) error
+	TakeSegmentFromUser(userId int, slug string) error
+	GetActiveSegmentsOfUser(userId int) (*dto.UsersActiveSegments, error)
 }
 
 // GetUsersHandler godoc
@@ -49,7 +48,7 @@ func (h *UsersHandler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		errorDto := &dtos.ErrorDto{
+		errorDto := &dto.ErrorDto{
 			Error: "Возникла внутренняя ошибка при запросе всех пользователей",
 		}
 		err = json.NewEncoder(w).Encode(errorDto)
@@ -59,15 +58,15 @@ func (h *UsersHandler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var usersDtos []*dtos.UserDto
+	var usersDtos []*dto.UserDto
 
 	// TODO: некрасиво, стоит переделать
 	if users == nil {
-		usersDtos = []*dtos.UserDto{}
+		usersDtos = []*dto.UserDto{}
 	}
 
 	for _, val := range users {
-		usersDtos = append(usersDtos, dtos.ConvertUserToUserDto(val))
+		usersDtos = append(usersDtos, dto.ConvertUserToUserDto(val))
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -101,7 +100,7 @@ func (h *UsersHandler) GetUserByIdHandler(w http.ResponseWriter, r *http.Request
 		switch err {
 		case repositories.ErrRecordNotFound:
 			w.WriteHeader(http.StatusNotFound)
-			errorDto := &dtos.ErrorDto{
+			errorDto := &dto.ErrorDto{
 				Error: "Пользователь с таким идентификатором не найден",
 			}
 			err = json.NewEncoder(w).Encode(errorDto)
@@ -110,7 +109,7 @@ func (h *UsersHandler) GetUserByIdHandler(w http.ResponseWriter, r *http.Request
 			}
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
-			errorDto := &dtos.ErrorDto{
+			errorDto := &dto.ErrorDto{
 				Error: "Возникла внутренняя ошибка при запросе пользователя",
 			}
 			err = json.NewEncoder(w).Encode(errorDto)
@@ -143,13 +142,13 @@ func (h *UsersHandler) GetUserByIdHandler(w http.ResponseWriter, r *http.Request
 //		@Failure		500	    {object}	dtos.ErrorDto										"Возникла внутренняя ошибка сервера"
 //		@Router			/api/v1/users [post]
 func (h *UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	var user dtos.CreateUserDto
+	var user dto.CreateUserDto
 
 	w.Header().Add("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		errorDto := &dtos.ErrorDto{
+		errorDto := &dto.ErrorDto{
 			Error: "Некорректные входные данные",
 		}
 		err = json.NewEncoder(w).Encode(errorDto)
@@ -163,7 +162,7 @@ func (h *UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request)
 	id, err := h.repository.CreateUser(user.Name)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		errorDto := &dtos.ErrorDto{
+		errorDto := &dto.ErrorDto{
 			Error: "Возникла внутренняя ошибка при создании пользователя",
 		}
 		err = json.NewEncoder(w).Encode(errorDto)
@@ -174,7 +173,7 @@ func (h *UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	createUserResponseDto := dtos.CreateUserResponseDto{
+	createUserResponseDto := dto.CreateUserResponseDto{
 		Id: id,
 	}
 
@@ -201,7 +200,7 @@ func (h *UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request)
 //		@Failure		500	    {object}	dtos.ErrorDto			"Внутренняя ошибка сервера"
 //		@Router			/api/v1/users/{userId}/changeSegmentsOfUser [post]
 func (h *UsersHandler) ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *http.Request) {
-	var userSegment dtos.ChangeUserSegmentsDto
+	var userSegment dto.ChangeUserSegmentsDto
 	params := mux.Vars(r)
 	userId, _ := strconv.Atoi(params["userId"])
 
@@ -209,7 +208,7 @@ func (h *UsersHandler) ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *htt
 	err := json.NewDecoder(r.Body).Decode(&userSegment)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		errorDto := &dtos.ErrorDto{
+		errorDto := &dto.ErrorDto{
 			Error: "Некорректные входные данные",
 		}
 		err = json.NewEncoder(w).Encode(errorDto)
@@ -226,7 +225,7 @@ func (h *UsersHandler) ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *htt
 			switch err {
 			case repositories.ErrRecordNotFound:
 				w.WriteHeader(http.StatusNotFound)
-				errorDto := &dtos.ErrorDto{
+				errorDto := &dto.ErrorDto{
 					Error: "Пользователь с таким идентификатором не найден",
 				}
 				err = json.NewEncoder(w).Encode(errorDto)
@@ -235,7 +234,7 @@ func (h *UsersHandler) ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *htt
 				}
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
-				errorDto := &dtos.ErrorDto{
+				errorDto := &dto.ErrorDto{
 					Error: "Возникла внутренняя ошибка при добавлении новых сегментов пользователю",
 				}
 				err = json.NewEncoder(w).Encode(errorDto)
@@ -254,7 +253,7 @@ func (h *UsersHandler) ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *htt
 			switch err {
 			case repositories.ErrRecordNotFound:
 				w.WriteHeader(http.StatusNotFound)
-				errorDto := &dtos.ErrorDto{
+				errorDto := &dto.ErrorDto{
 					Error: "Пользователь с таким идентификатором не найден",
 				}
 				err = json.NewEncoder(w).Encode(errorDto)
@@ -263,7 +262,7 @@ func (h *UsersHandler) ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *htt
 				}
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
-				errorDto := &dtos.ErrorDto{
+				errorDto := &dto.ErrorDto{
 					Error: "Возникла внутренняя ошибка при удалении сегментов пользователя",
 				}
 				err = json.NewEncoder(w).Encode(errorDto)
@@ -302,7 +301,7 @@ func (h *UsersHandler) GetActiveSegmentsOfUser(w http.ResponseWriter, r *http.Re
 		switch err {
 		case repositories.ErrRecordNotFound:
 			w.WriteHeader(http.StatusNotFound)
-			errorDto := &dtos.ErrorDto{
+			errorDto := &dto.ErrorDto{
 				Error: "Пользователь с таким идентификатором не найден",
 			}
 			err = json.NewEncoder(w).Encode(errorDto)
@@ -311,7 +310,7 @@ func (h *UsersHandler) GetActiveSegmentsOfUser(w http.ResponseWriter, r *http.Re
 			}
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
-			errorDto := &dtos.ErrorDto{
+			errorDto := &dto.ErrorDto{
 				Error: "Возникла внутренняя ошибка при запросе активных сегментов пользователя",
 			}
 			err = json.NewEncoder(w).Encode(errorDto)

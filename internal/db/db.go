@@ -8,11 +8,11 @@ import (
 )
 
 type DatabaseConfig struct {
-	DbHost string `envconfig:"DB_HOST"`
-	DbPort string `envconfig:"DB_PORT"`
-	DbName string `envconfig:"DB_NAME"`
-	DbUser string `envconfig:"DB_USER"`
-	DbPass string `envconfig:"DB_PASS"`
+	DbHost string `envconfig:"HOST"`
+	DbPort string `envconfig:"PORT"`
+	DbName string `envconfig:"NAME"`
+	DbUser string `envconfig:"USER"`
+	DbPass string `envconfig:"PASS"`
 }
 
 func CreateConnection(config DatabaseConfig) (*sqlx.DB, error) {

@@ -6,15 +6,16 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/TinyMarcus/avito-tech-task/internal/handlers/dtos"
+	"github.com/TinyMarcus/avito-tech-task/internal/handlers/dto"
+	"github.com/TinyMarcus/avito-tech-task/internal/models"
 	"github.com/TinyMarcus/avito-tech-task/internal/repositories"
 )
 
 type SegmentsHandler struct {
-	repository *repositories.PostgresSegmentRepository
+	repository SegmentRepository
 }
 
-func NewSegmentsHandler(r *repositories.PostgresSegmentRepository) *SegmentsHandler {
+func NewSegmentsHandler(r SegmentRepository) *SegmentsHandler {
 	return &SegmentsHandler{
 		repository: r,
 	}
@@ -22,11 +23,11 @@ func NewSegmentsHandler(r *repositories.PostgresSegmentRepository) *SegmentsHand
 
 //go:generate mockgen -source=segment_repository.go -destination ./mocks/segment_repository.go
 type SegmentRepository interface {
-	GetAllSegments() ([]*dtos.SegmentDto, error)
-	GetSegmentBySlug(slug string) (*dtos.SegmentDto, error)
+	GetAllSegments() ([]*models.Segment, error)
+	GetSegmentBySlug(slug string) (*models.Segment, error)
 	CreateSegment(slug, description string) (string, error)
-	UpdateSegment(slug, description string) (*dtos.SegmentDto, error)
-	DeleteSegment(slug string) (*dtos.SegmentDto, error)
+	UpdateSegment(slug, description string) (*models.Segment, error)
+	DeleteSegment(slug string) (*models.Segment, error)
 }
 
 // GetSegmentsHandler godoc
@@ -46,7 +47,7 @@ func (h *SegmentsHandler) GetSegmentsHandler(w http.ResponseWriter, r *http.Requ
 	w.Header().Add("Content-Type", "application/json")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		errorDto := &dtos.ErrorDto{
+		errorDto := &dto.ErrorDto{
 			Error: "Возникла внутренняя ошибка при запросе всех сегментов",
 		}
 		err = json.NewEncoder(w).Encode(errorDto)
@@ -57,15 +58,15 @@ func (h *SegmentsHandler) GetSegmentsHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var segmentsDtos []*dtos.SegmentDto
+	var segmentsDtos []*dto.SegmentDto
 
 	// TODO: некрасиво, стоит переделать
 	if segments == nil {
-		segmentsDtos = []*dtos.SegmentDto{}
+		segmentsDtos = []*dto.SegmentDto{}
 	}
 
 	for _, val := range segments {
-		segmentsDtos = append(segmentsDtos, dtos.ConvertSegmentToSegmentDto(val))
+		segmentsDtos = append(segmentsDtos, dto.ConvertSegmentToSegmentDto(val))
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -99,7 +100,7 @@ func (h *SegmentsHandler) GetSegmentBySlugHandler(w http.ResponseWriter, r *http
 		switch err {
 		case repositories.ErrRecordNotFound:
 			w.WriteHeader(http.StatusNotFound)
-			errorDto := &dtos.ErrorDto{
+			errorDto := &dto.ErrorDto{
 				Error: "Запись с таким названием в таблице сегментов не найдена",
 			}
 			err = json.NewEncoder(w).Encode(errorDto)
@@ -109,7 +110,7 @@ func (h *SegmentsHandler) GetSegmentBySlugHandler(w http.ResponseWriter, r *http
 			}
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
-			errorDto := &dtos.ErrorDto{
+			errorDto := &dto.ErrorDto{
 				Error: "Возникла внутренняя ошибка при запросе сегмента по названию",
 			}
 			err = json.NewEncoder(w).Encode(errorDto)
@@ -122,7 +123,7 @@ func (h *SegmentsHandler) GetSegmentBySlugHandler(w http.ResponseWriter, r *http
 	}
 
 	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(dtos.ConvertSegmentToSegmentDto(segment))
+	err = json.NewEncoder(w).Encode(dto.ConvertSegmentToSegmentDto(segment))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
@@ -142,13 +143,13 @@ func (h *SegmentsHandler) GetSegmentBySlugHandler(w http.ResponseWriter, r *http
 //		@Failure		500	    {object}	dtos.ErrorDto						"Возникла внутренняя ошибка сервера"
 //		@Router			/api/v1/segments [post]
 func (h *SegmentsHandler) CreateSegmentHandler(w http.ResponseWriter, r *http.Request) {
-	var segment dtos.CreateOrUpdateSegmentDto
+	var segment dto.CreateOrUpdateSegmentDto
 
 	w.Header().Add("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&segment)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		errorDto := &dtos.ErrorDto{
+		errorDto := &dto.ErrorDto{
 			Error: "Некорректные входные данные",
 		}
 		err = json.NewEncoder(w).Encode(errorDto)
@@ -162,7 +163,7 @@ func (h *SegmentsHandler) CreateSegmentHandler(w http.ResponseWriter, r *http.Re
 	slug, err := h.repository.CreateSegment(segment.Slug, segment.Description)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		errorDto := &dtos.ErrorDto{
+		errorDto := &dto.ErrorDto{
 			Error: "Возникла внутренняя ошибка при создании сегмента",
 		}
 		err = json.NewEncoder(w).Encode(errorDto)
@@ -173,7 +174,7 @@ func (h *SegmentsHandler) CreateSegmentHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	createResponseDto := dtos.CreateSegmentResponseDto{
+	createResponseDto := dto.CreateSegmentResponseDto{
 		Slug: slug,
 	}
 
@@ -203,13 +204,13 @@ func (h *SegmentsHandler) UpdateSegmentHandler(w http.ResponseWriter, r *http.Re
 	params := mux.Vars(r)
 	slug := params["slug"]
 
-	var segment dtos.CreateOrUpdateSegmentDto
+	var segment dto.CreateOrUpdateSegmentDto
 
 	w.Header().Add("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&segment)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		errorDto := &dtos.ErrorDto{
+		errorDto := &dto.ErrorDto{
 			Error: "Некорректные входные данные",
 		}
 		err = json.NewEncoder(w).Encode(errorDto)
@@ -225,7 +226,7 @@ func (h *SegmentsHandler) UpdateSegmentHandler(w http.ResponseWriter, r *http.Re
 		switch err {
 		case repositories.ErrRecordNotFound:
 			w.WriteHeader(http.StatusNotFound)
-			errorDto := &dtos.ErrorDto{
+			errorDto := &dto.ErrorDto{
 				Error: "Запись с таким названием в таблице сегментов не найдена",
 			}
 			err = json.NewEncoder(w).Encode(errorDto)
@@ -234,7 +235,7 @@ func (h *SegmentsHandler) UpdateSegmentHandler(w http.ResponseWriter, r *http.Re
 			}
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
-			errorDto := &dtos.ErrorDto{
+			errorDto := &dto.ErrorDto{
 				Error: "Возникла внутренняя ошибка при обновлении сегмента",
 			}
 			err = json.NewEncoder(w).Encode(errorDto)
@@ -246,7 +247,7 @@ func (h *SegmentsHandler) UpdateSegmentHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	updateResponseDto := dtos.UpdateSegmentResponseDto{
+	updateResponseDto := dto.UpdateSegmentResponseDto{
 		Id:          updated.Id,
 		Slug:        updated.Slug,
 		Description: updated.Description,
@@ -283,7 +284,7 @@ func (h *SegmentsHandler) DeleteSegmentHandler(w http.ResponseWriter, r *http.Re
 		switch err {
 		case repositories.ErrRecordNotFound:
 			w.WriteHeader(http.StatusNotFound)
-			errorDto := &dtos.ErrorDto{
+			errorDto := &dto.ErrorDto{
 				Error: "Запись с таким названием в таблице сегментов не найдена",
 			}
 			err = json.NewEncoder(w).Encode(errorDto)
@@ -292,7 +293,7 @@ func (h *SegmentsHandler) DeleteSegmentHandler(w http.ResponseWriter, r *http.Re
 			}
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
-			errorDto := &dtos.ErrorDto{
+			errorDto := &dto.ErrorDto{
 				Error: "Возникла внутренняя ошибка при удалении сегмента",
 			}
 			err = json.NewEncoder(w).Encode(errorDto)

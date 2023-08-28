@@ -1,4 +1,4 @@
-package dtos
+package dto
 
 // ErrorDto model info
 // @Description Информация об ошибке (DTO)
