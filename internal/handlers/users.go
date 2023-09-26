@@ -40,8 +40,8 @@ type UserRepository interface {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	    {array} 	dtos.UserDto			"Все пользователи успешно получены"
-//	@Failure		500	    {object}	dtos.ErrorDto			"Возникла внутренняя ошибка сервера"
+//	@Success		200	    {array} 	dto.UserDto			"Все пользователи успешно получены"
+//	@Failure		500	    {object}	dto.ErrorDto			"Возникла внутренняя ошибка сервера"
 //	@Router			/api/v1/users [get]
 func (h *UsersHandler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	users, err := h.repository.GetAllUsers()
@@ -85,10 +85,10 @@ func (h *UsersHandler) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			userId	path		int						true	"Идентификатор пользователя"
-//	@Success		200	    {object} 	dtos.UserDto			"Пользователь с данным идентификатором успешно получен"
-//	@Failure		400		{object}	dtos.ErrorDto			"Некорректные входные данные"
-//	@Failure		404		{object}	dtos.ErrorDto			"Пользователь с данным идентификатором не найден"
-//	@Failure		500	    {object}	dtos.ErrorDto			"Возникла внутренняя ошибка сервера"
+//	@Success		200	    {object} 	dto.UserDto			"Пользователь с данным идентификатором успешно получен"
+//	@Failure		400		{object}	dto.ErrorDto			"Некорректные входные данные"
+//	@Failure		404		{object}	dto.ErrorDto			"Пользователь с данным идентификатором не найден"
+//	@Failure		500	    {object}	dto.ErrorDto			"Возникла внутренняя ошибка сервера"
 //	@Router			/api/v1/users/{userId} [get]
 func (h *UsersHandler) GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -136,10 +136,10 @@ func (h *UsersHandler) GetUserByIdHandler(w http.ResponseWriter, r *http.Request
 //		@Tags			users
 //		@Accept			json
 //		@Produce		json
-//	 	@Param			User	body		dtos.CreateUserDto	    true	"Информация о добавляемом пользователе"
-//		@Success		201		{object}	dtos.CreateUserResponseDto						"Пользователь успешно создан"
-//		@Failure		400		{object}	dtos.ErrorDto										"Некорректные входные данные"
-//		@Failure		500	    {object}	dtos.ErrorDto										"Возникла внутренняя ошибка сервера"
+//	 	@Param			User	body		dto.CreateUserDto	    true	"Информация о добавляемом пользователе"
+//		@Success		201		{object}	dto.CreateUserResponseDto						"Пользователь успешно создан"
+//		@Failure		400		{object}	dto.ErrorDto										"Некорректные входные данные"
+//		@Failure		500	    {object}	dto.ErrorDto										"Возникла внутренняя ошибка сервера"
 //		@Router			/api/v1/users [post]
 func (h *UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var user dto.CreateUserDto
@@ -193,11 +193,11 @@ func (h *UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request)
 //		@Accept			json
 //		@Produce		json
 //		@Param			userId	path		int						true	"Идентификатор пользователя"
-//	 	@Param			Информация о добавляемых и удаляемых сегментах	body	dtos.ChangeUserSegmentsDto	    true	"Информация о добавляемых и удаляемых сегментах"
+//	 	@Param			Информация о добавляемых и удаляемых сегментах	body	dto.ChangeUserSegmentsDto	    true	"Информация о добавляемых и удаляемых сегментах"
 //		@Success		200											"Сегменты пользователя успешно изменены"
-//		@Failure		400		{object}	dtos.ErrorDto			"Некорректные входные данные"
-//		@Failure		404		{object}	dtos.ErrorDto			"Пользователь с данным идентификатором не найден"
-//		@Failure		500	    {object}	dtos.ErrorDto			"Внутренняя ошибка сервера"
+//		@Failure		400		{object}	dto.ErrorDto			"Некорректные входные данные"
+//		@Failure		404		{object}	dto.ErrorDto			"Пользователь с данным идентификатором не найден"
+//		@Failure		500	    {object}	dto.ErrorDto			"Внутренняя ошибка сервера"
 //		@Router			/api/v1/users/{userId}/changeSegmentsOfUser [post]
 func (h *UsersHandler) ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *http.Request) {
 	var userSegment dto.ChangeUserSegmentsDto
@@ -287,9 +287,9 @@ func (h *UsersHandler) ChangeSegmentsOfUserHandler(w http.ResponseWriter, r *htt
 //	@Accept			json
 //	@Produce		json
 //	@Param			userId	path		int					true		"Идентификатор пользователя"
-//	@Success		200		{object}	dtos.UsersActiveSegments		"Активные сегменты пользователя успешно получены"
-//	@Failure		404		{object}	dtos.ErrorDto					"Пользователь с данным идентификатором не найден"
-//	@Failure		500	    {object}	dtos.ErrorDto					"Возникла внутренняя ошибка сервера"
+//	@Success		200		{object}	dto.UsersActiveSegments		"Активные сегменты пользователя успешно получены"
+//	@Failure		404		{object}	dto.ErrorDto					"Пользователь с данным идентификатором не найден"
+//	@Failure		500	    {object}	dto.ErrorDto					"Возникла внутренняя ошибка сервера"
 //	@Router			/api/v1/users/{userId}/active [get]
 func (h *UsersHandler) GetActiveSegmentsOfUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)

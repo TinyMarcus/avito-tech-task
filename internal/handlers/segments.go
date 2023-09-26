@@ -38,8 +38,8 @@ type SegmentRepository interface {
 //	@Tags			segments
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	    {array} 	dtos.SegmentDto			"Все сегменты успешно получены"
-//	@Failure		500	    {object}	dtos.ErrorDto			"Возникла внутренняя ошибка сервера"
+//	@Success		200	    {array} 	dto.SegmentDto			"Все сегменты успешно получены"
+//	@Failure		500	    {object}	dto.ErrorDto			"Возникла внутренняя ошибка сервера"
 //	@Router			/api/v1/segments [get]
 func (h *SegmentsHandler) GetSegmentsHandler(w http.ResponseWriter, r *http.Request) {
 	segments, err := h.repository.GetAllSegments()
@@ -85,10 +85,10 @@ func (h *SegmentsHandler) GetSegmentsHandler(w http.ResponseWriter, r *http.Requ
 //	@Accept			json
 //	@Produce		json
 //	@Param			slug	path		string					true	"Название сегмента"
-//	@Success		200	    {object} 	dtos.SegmentDto			"Сегмент с данным названием успешно получен"
-//	@Failure		400		{object}	dtos.ErrorDto			"Некорректные входные данные"
-//	@Failure		404		{object}	dtos.ErrorDto			"Сегмент с данным названием не найден"
-//	@Failure		500	    {object}	dtos.ErrorDto			"Возникла внутренняя ошибка сервера"
+//	@Success		200	    {object} 	dto.SegmentDto			"Сегмент с данным названием успешно получен"
+//	@Failure		400		{object}	dto.ErrorDto			"Некорректные входные данные"
+//	@Failure		404		{object}	dto.ErrorDto			"Сегмент с данным названием не найден"
+//	@Failure		500	    {object}	dto.ErrorDto			"Возникла внутренняя ошибка сервера"
 //	@Router			/api/v1/segments/{slug} [get]
 func (h *SegmentsHandler) GetSegmentBySlugHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -137,10 +137,10 @@ func (h *SegmentsHandler) GetSegmentBySlugHandler(w http.ResponseWriter, r *http
 //		@Tags			segments
 //		@Accept			json
 //		@Produce		json
-//	 	@Param			Segment 	body	dtos.CreateOrUpdateSegmentDto	    true	"Информация о добавляемом сегменте"
-//		@Success		201		{object}	dtos.CreateSegmentResponseDto		"Сегмент успешно создан"
-//		@Failure		400		{object}	dtos.ErrorDto						"Некорректные входные данные"
-//		@Failure		500	    {object}	dtos.ErrorDto						"Возникла внутренняя ошибка сервера"
+//	 	@Param			Segment 	body	dto.CreateOrUpdateSegmentDto	    true	"Информация о добавляемом сегменте"
+//		@Success		201		{object}	dto.CreateSegmentResponseDto		"Сегмент успешно создан"
+//		@Failure		400		{object}	dto.ErrorDto						"Некорректные входные данные"
+//		@Failure		500	    {object}	dto.ErrorDto						"Возникла внутренняя ошибка сервера"
 //		@Router			/api/v1/segments [post]
 func (h *SegmentsHandler) CreateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	var segment dto.CreateOrUpdateSegmentDto
@@ -194,11 +194,11 @@ func (h *SegmentsHandler) CreateSegmentHandler(w http.ResponseWriter, r *http.Re
 //		@Accept			json
 //		@Produce		json
 //		@Param			slug	path		string					true		"Название сегмента"
-//	 	@Param			Информация о сегменте	body	dtos.CreateOrUpdateSegmentDto	    true	"Информация о добавляемом сегменте"
-//		@Success		200		{object}	dtos.UpdateSegmentResponseDto		"Сегмент с данным названием успешно обновлен"
-//		@Failure		400		{object}	dtos.ErrorDto						"Некорректные входные данные"
-//		@Failure		404		{object}	dtos.ErrorDto						"Сегмент с данным названием не найден"
-//		@Failure		500	    {object}	dtos.ErrorDto						"Возникла внутренняя ошибка сервреа"
+//	 	@Param			Информация о сегменте	body	dto.CreateOrUpdateSegmentDto	    true	"Информация о добавляемом сегменте"
+//		@Success		200		{object}	dto.UpdateSegmentResponseDto		"Сегмент с данным названием успешно обновлен"
+//		@Failure		400		{object}	dto.ErrorDto						"Некорректные входные данные"
+//		@Failure		404		{object}	dto.ErrorDto						"Сегмент с данным названием не найден"
+//		@Failure		500	    {object}	dto.ErrorDto						"Возникла внутренняя ошибка сервреа"
 //		@Router			/api/v1/segments/{slug} [put]
 func (h *SegmentsHandler) UpdateSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -270,9 +270,9 @@ func (h *SegmentsHandler) UpdateSegmentHandler(w http.ResponseWriter, r *http.Re
 //	@Produce		json
 //	@Param			slug	path		string					true		"Название сегмента"
 //	@Success		204														"Сегмент с данным названием успешно удален"
-//	@Failure		400		{object}	dtos.ErrorDto						"Некорректные входные данные"
-//	@Failure		404		{object}	dtos.ErrorDto						"Сегмент с данным названием не найден"
-//	@Failure		500	    {object}	dtos.ErrorDto						"Возникла внутренняя ошибка сервера"
+//	@Failure		400		{object}	dto.ErrorDto						"Некорректные входные данные"
+//	@Failure		404		{object}	dto.ErrorDto						"Сегмент с данным названием не найден"
+//	@Failure		500	    {object}	dto.ErrorDto						"Возникла внутренняя ошибка сервера"
 //	@Router			/api/v1/segments/{slug} [delete]
 func (h *SegmentsHandler) DeleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
